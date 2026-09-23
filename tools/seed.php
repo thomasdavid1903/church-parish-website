@@ -952,8 +952,11 @@ update_option( 'start_of_week', 1 );
 update_option( 'default_comment_status', 'closed' );
 update_option( 'permalink_structure', '/%postname%/' );
 if ( ! get_option( 'parish_calendar_id' ) ) {
-	// The Cathedral's existing public Google Calendar of services.
+	// The Cathedral's existing public Google Calendars of services (as on the old site).
 	update_option( 'parish_calendar_id', 'cpdlaqq6537kqb4mvedbmssmi8@group.calendar.google.com' );
+}
+if ( ! get_option( 'parish_calendar_id_ru' ) ) {
+	update_option( 'parish_calendar_id_ru', 'russcc@googlemail.com' );
 }
 
 sd_languages();

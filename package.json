@@ -3,7 +3,7 @@
 	"private": true,
 	"description": "Website for the London Orthodox Cathedral of the Nativity of the Mother of God and Holy Royal Martyrs (ROCOR).",
 	"scripts": {
-		"dev": "node ./node_modules/@wp-playground/cli/wp-playground.js server --port=9400 --blueprint=./blueprint.json --mount=./wp-content/themes/parish-cathedral:/wordpress/wp-content/themes/parish-cathedral --mount=./wp-content/plugins/parish-core:/wordpress/wp-content/plugins/parish-core --mount=./tools:/wordpress/parish-tools"
+		"dev": "node ./node_modules/@wp-playground/cli/wp-playground.js server --blueprint=./blueprint.json --mount=./wp-content/themes/parish-cathedral:/wordpress/wp-content/themes/parish-cathedral --mount=./wp-content/plugins/parish-core:/wordpress/wp-content/plugins/parish-core --mount=./tools:/wordpress/parish-tools"
 	},
 	"devDependencies": {
 		"@wp-playground/cli": "^1.0.0"

@@ -8,7 +8,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$calendar_id = $attributes['calendarId'] ?: get_option( PARISH_OPTION_CALENDAR );
+$calendar_id = $attributes['calendarId'] ?: parish_calendar_id();
 
 if ( ! $calendar_id ) {
 	if ( current_user_can( 'manage_options' ) ) {

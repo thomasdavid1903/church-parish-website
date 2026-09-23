@@ -7,35 +7,60 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const PARISH_OPTION_CALENDAR = 'parish_calendar_id';
+const PARISH_OPTION_CALENDAR    = 'parish_calendar_id';
+const PARISH_OPTION_CALENDAR_RU = 'parish_calendar_id_ru';
+
+/**
+ * The calendar for the current language. The parish keeps separate English
+ * and Russian Google Calendars; Russian falls back to English if unset.
+ */
+function parish_calendar_id(): string {
+	$lang = function_exists( 'pll_current_language' ) ? pll_current_language( 'slug' ) : '';
+	if ( 'ru' === $lang && get_option( PARISH_OPTION_CALENDAR_RU ) ) {
+		return (string) get_option( PARISH_OPTION_CALENDAR_RU );
+	}
+	return (string) get_option( PARISH_OPTION_CALENDAR );
+}
 
 add_action(
 	'admin_init',
 	function () {
-		register_setting(
-			'parish',
-			PARISH_OPTION_CALENDAR,
-			array(
-				'type'              => 'string',
-				'sanitize_callback' => 'parish_sanitize_calendar_id',
-				'default'           => '',
-			)
-		);
 		add_settings_section( 'parish_calendar', __( 'Service schedule', 'parish-core' ), '__return_false', 'parish' );
-		add_settings_field(
-			PARISH_OPTION_CALENDAR,
-			__( 'Google Calendar ID', 'parish-core' ),
-			function () {
-				printf(
-					'<input type="text" class="regular-text code" name="%1$s" value="%2$s" placeholder="abc123@group.calendar.google.com"><p class="description">%3$s</p>',
-					esc_attr( PARISH_OPTION_CALENDAR ),
-					esc_attr( get_option( PARISH_OPTION_CALENDAR ) ),
-					esc_html__( 'In Google Calendar: Settings → (your calendar) → Integrate calendar → Calendar ID. The calendar must be public ("Make available to public"). You may also paste the full embed URL.', 'parish-core' )
-				);
-			},
-			'parish',
-			'parish_calendar'
+
+		$fields = array(
+			PARISH_OPTION_CALENDAR    => __( 'Google Calendar ID (English)', 'parish-core' ),
+			PARISH_OPTION_CALENDAR_RU => __( 'Google Calendar ID (Russian)', 'parish-core' ),
 		);
+		foreach ( $fields as $option => $label ) {
+			register_setting(
+				'parish',
+				$option,
+				array(
+					'type'              => 'string',
+					'sanitize_callback' => 'parish_sanitize_calendar_id',
+					'default'           => '',
+				)
+			);
+			add_settings_field(
+				$option,
+				$label,
+				function () use ( $option ) {
+					printf(
+						'<input type="text" class="regular-text code" name="%1$s" value="%2$s" placeholder="abc123@group.calendar.google.com">',
+						esc_attr( $option ),
+						esc_attr( get_option( $option ) )
+					);
+					if ( PARISH_OPTION_CALENDAR_RU === $option ) {
+						printf(
+							'<p class="description">%s</p>',
+							esc_html__( 'Shown on Russian pages. Leave empty to use the English calendar in both languages. In Google Calendar: Settings → (your calendar) → Integrate calendar → Calendar ID. Each calendar must be public ("Make available to public"). You may also paste the full embed URL.', 'parish-core' )
+						);
+					}
+				},
+				'parish',
+				'parish_calendar'
+			);
+		}
 	}
 );
 
