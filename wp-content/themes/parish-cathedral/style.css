@@ -1,0 +1,272 @@
+/*
+Theme Name: Parish Cathedral
+Theme URI: https://github.com/thomasdavid1903/church-parish-website
+Description: A clean, bilingual (English / Russian) block theme for the London Cathedral of the Nativity of the Mother of God and Holy Royal Martyrs (ROCOR). Built to pair with the Parish Core plugin and Polylang.
+Version: 0.1.0
+Requires at least: 6.6
+Requires PHP: 8.0
+License: GPL-2.0-or-later
+Text Domain: parish-cathedral
+*/
+
+/* ---------- Header ---------- */
+
+.parish-topbar,
+.parish-masthead-wrap,
+.parish-nav,
+.parish-footer {
+	padding-left: var(--wp--style--root--padding-left, 1rem);
+	padding-right: var(--wp--style--root--padding-right, 1rem);
+}
+
+.parish-topbar {
+	background: var(--wp--preset--color--primary);
+	color: var(--wp--preset--color--white);
+	font-size: var(--wp--preset--font-size--small);
+}
+.parish-topbar__inner {
+	max-width: var(--wp--style--global--wide-size);
+	margin: 0 auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	padding: 0.35rem 0;
+}
+.parish-topbar a { color: inherit; }
+
+.parish-lang {
+	display: flex;
+	gap: 0.25rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+.parish-lang a {
+	display: inline-block;
+	padding: 0.1rem 0.5rem;
+	border-radius: 3px;
+	text-decoration: none;
+	font-weight: 700;
+	opacity: 0.8;
+}
+.parish-lang a:hover { opacity: 1; }
+.parish-lang .current-lang a {
+	background: rgba(255, 255, 255, 0.18);
+	opacity: 1;
+}
+
+.parish-masthead {
+	max-width: var(--wp--style--global--wide-size);
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 1.25rem 0 1rem;
+}
+.parish-masthead__cross {
+	flex: none;
+	width: 34px;
+	height: 44px;
+	color: var(--wp--preset--color--primary);
+}
+.parish-masthead__title {
+	font-family: var(--wp--preset--font-family--serif);
+	font-size: var(--wp--preset--font-size--x-large);
+	font-weight: 700;
+	line-height: 1.15;
+	margin: 0;
+}
+.parish-masthead__title a { color: var(--wp--preset--color--ink); text-decoration: none; }
+.parish-masthead__subtitle {
+	margin: 0.2rem 0 0;
+	color: var(--wp--preset--color--muted);
+	font-family: var(--wp--preset--font-family--serif);
+	font-style: italic;
+	line-height: 1.35;
+}
+
+.parish-nav {
+	border-top: 1px solid var(--wp--preset--color--border);
+	border-bottom: 1px solid var(--wp--preset--color--border);
+}
+.parish-nav__inner {
+	max-width: var(--wp--style--global--wide-size);
+	margin: 0 auto;
+}
+.parish-nav__toggle { display: none; }
+.parish-nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+}
+.parish-nav li { position: relative; }
+.parish-nav a {
+	display: block;
+	padding: 0.8rem 0.9rem;
+	color: var(--wp--preset--color--ink);
+	text-decoration: none;
+	font-weight: 700;
+	font-size: 0.95rem;
+}
+.parish-nav > .parish-nav__inner > ul > li:first-child > a { padding-left: 0; }
+.parish-nav a:hover,
+.parish-nav .current-menu-item > a,
+.parish-nav .current-menu-ancestor > a,
+.parish-nav .current_page_parent > a { color: var(--wp--preset--color--primary); }
+.parish-nav .current-menu-item > a { box-shadow: inset 0 -3px 0 var(--wp--preset--color--primary); }
+
+/* Dropdowns (e.g. Parish Life → Sisterhood, Youth Group…) */
+.parish-nav .sub-menu,
+.parish-nav .children {
+	display: none;
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 20;
+	min-width: 220px;
+	flex-direction: column;
+	background: var(--wp--preset--color--white);
+	border: 1px solid var(--wp--preset--color--border);
+	box-shadow: 0 8px 24px rgba(34, 28, 24, 0.08);
+}
+.parish-nav li:hover > .sub-menu, .parish-nav li:hover > .children,
+.parish-nav li:focus-within > .sub-menu, .parish-nav li:focus-within > .children { display: flex; }
+.parish-nav .sub-menu a, .parish-nav .children a { padding: 0.6rem 1rem; font-weight: 400; }
+.parish-nav .sub-menu .current-menu-item > a { box-shadow: inset 3px 0 0 var(--wp--preset--color--primary); }
+
+@media (max-width: 781px) {
+	.parish-topbar__tagline { display: none; }
+	.parish-masthead__cross { width: 26px; height: 34px; }
+	.parish-nav__toggle {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: 100%;
+		padding: 0.75rem 0;
+		background: none;
+		border: 0;
+		font: inherit;
+		font-weight: 700;
+		color: var(--wp--preset--color--ink);
+		cursor: pointer;
+	}
+	.parish-nav ul { display: none; flex-direction: column; padding-bottom: 0.5rem; }
+	.parish-nav.is-open ul { display: flex; }
+	.parish-nav a { padding: 0.6rem 0; }
+	.parish-nav .current-menu-item > a { box-shadow: none; }
+	.parish-nav .sub-menu,
+	.parish-nav .children {
+		display: flex;
+		position: static;
+		border: 0;
+		box-shadow: none;
+		background: none;
+		padding-left: 1rem;
+	}
+}
+
+/* ---------- Content helpers ---------- */
+
+/* "Info card" block style — used for the sidebar boxes (services, address, contacts). */
+.is-style-parish-card {
+	background: var(--wp--preset--color--white);
+	border: 1px solid var(--wp--preset--color--border);
+	border-top: 3px solid var(--wp--preset--color--primary);
+	border-radius: 4px;
+	padding: 1.25rem 1.4rem;
+}
+.is-style-parish-card > :first-child { margin-top: 0; }
+.is-style-parish-card h2,
+.is-style-parish-card h3 {
+	font-size: var(--wp--preset--font-size--large);
+	margin-bottom: 0.5rem;
+}
+.is-style-parish-card p { margin: 0.25rem 0; }
+
+/* Time-table list: "Saturday Vigil ....... 5.00 pm" */
+.is-style-parish-timetable {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.is-style-parish-timetable li {
+	display: flex;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 0.4rem 0;
+	border-bottom: 1px dotted var(--wp--preset--color--border);
+}
+.is-style-parish-timetable li:last-child { border-bottom: 0; }
+.is-style-parish-timetable strong { white-space: nowrap; font-weight: 700; }
+
+.is-style-parish-section-title {
+	padding-bottom: 0.4rem;
+	border-bottom: 2px solid var(--wp--preset--color--accent);
+	display: inline-block;
+}
+
+/* News list */
+.parish-news-item {
+	padding-bottom: 1.25rem;
+	border-bottom: 1px solid var(--wp--preset--color--border);
+}
+.parish-news-item .wp-block-post-title { margin: 0.2rem 0 0.4rem; }
+.parish-news-item .wp-block-post-excerpt { margin: 0; }
+.parish-news-item .wp-block-post-excerpt__excerpt { margin: 0; color: var(--wp--preset--color--muted); }
+
+/* Clergy / group-leader cards */
+.parish-person h3 { margin: 0; font-size: var(--wp--preset--font-size--large); }
+.parish-person .parish-person__role {
+	margin: 0;
+	color: var(--wp--preset--color--accent);
+	font-size: var(--wp--preset--font-size--small);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+/* Embeds: Google Calendar & Maps */
+.parish-embed iframe {
+	display: block;
+	width: 100%;
+	border: 1px solid var(--wp--preset--color--border);
+	border-radius: 4px;
+	background: var(--wp--preset--color--white);
+}
+
+/* ---------- Footer ---------- */
+
+.parish-footer {
+	margin-top: var(--wp--preset--spacing--60);
+	background: var(--wp--preset--color--ink);
+	color: #e9e2d8;
+	font-size: var(--wp--preset--font-size--small);
+}
+.parish-footer a { color: #fff; }
+.parish-footer__inner {
+	max-width: var(--wp--style--global--wide-size);
+	margin: 0 auto;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+	gap: 2rem;
+	padding: 2.5rem 0 1.5rem;
+}
+.parish-footer h2 {
+	color: #fff;
+	font-size: 1rem;
+	font-family: var(--wp--preset--font-family--sans);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	margin: 0 0 0.6rem;
+}
+.parish-footer p { margin: 0 0 0.4rem; }
+.parish-footer__legal {
+	max-width: var(--wp--style--global--wide-size);
+	margin: 0 auto;
+	padding: 1rem 0 1.5rem;
+	border-top: 1px solid rgba(255, 255, 255, 0.12);
+	color: #b7ada1;
+}

@@ -1,0 +1,19 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "parish/service-calendar",
+	"title": "Service schedule (Google Calendar)",
+	"category": "embed",
+	"icon": "calendar-alt",
+	"description": "Shows the parish's Google Calendar of services. The calendar is set once under Settings → Parish.",
+	"keywords": [ "calendar", "services", "schedule", "расписание" ],
+	"textdomain": "parish-core",
+	"attributes": {
+		"view": { "type": "string", "default": "AGENDA", "enum": [ "AGENDA", "WEEK", "MONTH" ] },
+		"height": { "type": "number", "default": 600 },
+		"calendarId": { "type": "string", "default": "" }
+	},
+	"supports": { "html": false, "align": [ "wide" ] },
+	"editorScript": "file:./index.js",
+	"render": "file:./render.php"
+}

@@ -1,0 +1,42 @@
+# Deploys the theme and Parish Core plugin to the Hostinger WordPress install.
+# Manual trigger only (Actions → Deploy to Hostinger → Run workflow).
+# Required secrets are listed in README.md.
+name: Deploy to Hostinger
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint PHP
+        run: find wp-content tools -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Set up SSH
+        env:
+          SSH_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$PORT" "$HOST" >> ~/.ssh/known_hosts
+
+      - name: Rsync theme and plugin
+        env:
+          HOST: ${{ secrets.HOSTINGER_HOST }}
+          PORT: ${{ secrets.HOSTINGER_PORT }}
+          USER: ${{ secrets.HOSTINGER_USER }}
+          WP_PATH: ${{ secrets.HOSTINGER_WP_PATH }}
+        run: |
+          RSH="ssh -p $PORT"
+          rsync -az --delete -e "$RSH" wp-content/themes/parish-cathedral/ "$USER@$HOST:$WP_PATH/wp-content/themes/parish-cathedral/"
+          rsync -az --delete -e "$RSH" wp-content/plugins/parish-core/ "$USER@$HOST:$WP_PATH/wp-content/plugins/parish-core/"
