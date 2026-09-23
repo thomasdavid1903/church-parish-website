@@ -39,15 +39,46 @@ The Cathedral is a registered charity (no. 234203). To claim Gift Aid it must be
 5. **Russian text:** who can proof-read the Russian pages?
 6. **Old site:** should orthodox-europe.org link or redirect to the new site once it's live?
 
+## Hosting
+
+The site runs on the parish's **existing Hostinger plan**. Nothing extra needs buying.
+
+- **What runs where:**
+  - WordPress runs on Hostinger, with Hostinger's free SSL certificate and its automatic backups.
+  - The site's design and features are kept on GitHub and copied to Hostinger when they change.
+  - Pages, news and photos live in WordPress itself, so editors never need GitHub.
+- **Preview first:**
+  - Before the council meeting the draft goes on Hostinger at a preview address, e.g. `new.<domain>`, or the temporary address Hostinger provides.
+  - It's hidden from Google, so councillors can click through a real site on their own phones.
+- **Domains:**
+  - At go-live the chosen domain points at the new site, and the second domain forwards to it.
+  - If the domains were bought somewhere other than Hostinger, their settings are updated to point at Hostinger.
+- **Moving from the old site:**
+  - The current pages sit inside the diocesan website (orthodox-europe.org), which we don't control, so they can't be "transferred" as a whole.
+  - The content has already been copied into the new site instead.
+  - If the old news archive is wanted, we'll ask the diocesan webmaster for an export.
+  - We'll also ask them to link the old pages to the new site.
+- **Access:**
+  - The organiser adds the developer to the Hostinger account through hPanel's *access management*, so no passwords need to be shared.
+  - Parish volunteers get their own WordPress logins.
+
+**Needed from the organiser now:**
+- Hostinger access.
+- Which Hostinger plan the parish has.
+- Where the two domains were registered.
+
 ## Timeline
 
 | When | What |
 | --- | --- |
-| **6 Oct** | Parish Council: live demo of the draft, decisions on the questions above |
-| +1 week | Set up on Hostinger on the chosen domain (not public yet) |
-| +2 weeks | Content finalised with clergy and group leaders; Russian proof-read; donation form connected |
-| +3 weeks | Short training session (≈30 min) for the news editor and group leaders |
-| +4 weeks | Go live; old site links to the new one |
+| **by Fri 25 Sep** | Organiser grants Hostinger access and confirms the plan and the domain registrar |
+| **by Wed 30 Sep** | WordPress set up on Hostinger at a hidden preview address; site and draft content installed; group leader login tested |
+| **Thu 1 – Mon 5 Oct** | Organiser and clergy review the preview; fixes made; Russian proof-read begins |
+| **Tue 6 Oct** | **Parish Council:** live demo on the preview address, decisions on the questions above |
+| by Tue 13 Oct | Council decisions applied: main domain chosen, donation provider signed up, volunteer logins created |
+| by Tue 20 Oct | Content finalised with clergy and group leaders; Russian proof-read complete; donation form tested |
+| week of 26 Oct | Short training session (≈30 min) for the news editor and group leaders |
+| **Tue 3 Nov** | **Go live:** main domain switched to the new site, second domain redirected; diocesan site links to it |
 
 ## Running costs
 
