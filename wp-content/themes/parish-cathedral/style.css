@@ -9,6 +9,25 @@ License: GPL-2.0-or-later
 Text Domain: parish-cathedral
 */
 
+.screen-reader-text:not(:focus) {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+/* ---------- Keyboard focus ---------- */
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+	outline: 3px solid var(--wp--preset--color--accent);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+.parish-topbar :focus-visible,
+.parish-footer :focus-visible { outline-color: var(--wp--preset--color--white); }
+
 /* ---------- Header ---------- */
 
 .parish-topbar,
@@ -31,7 +50,6 @@ Text Domain: parish-cathedral
 	justify-content: space-between;
 	align-items: center;
 	gap: 1rem;
-	padding: 0.35rem 0;
 }
 .parish-topbar a { color: inherit; }
 
@@ -42,9 +60,12 @@ Text Domain: parish-cathedral
 	margin: 0;
 	padding: 0;
 }
+/* 44px tall: easy to hit with a thumb. */
 .parish-lang a {
-	display: inline-block;
-	padding: 0.1rem 0.5rem;
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	padding: 0 0.75rem;
 	border-radius: 3px;
 	text-decoration: none;
 	font-weight: 700;
@@ -64,6 +85,7 @@ Text Domain: parish-cathedral
 	gap: 1rem;
 	padding: 1.25rem 0 1rem;
 }
+.parish-masthead__text { flex: 1; min-width: 0; }
 .parish-masthead__cross {
 	flex: none;
 	width: 34px;
@@ -137,25 +159,32 @@ Text Domain: parish-cathedral
 .parish-nav .sub-menu a, .parish-nav .children a { padding: 0.6rem 1rem; font-weight: 400; }
 .parish-nav .sub-menu .current-menu-item > a { box-shadow: inset 3px 0 0 var(--wp--preset--color--primary); }
 
+/* Phones: cross, short name and Menu button on one row, so content starts near the top. */
 @media (max-width: 781px) {
 	.parish-topbar__tagline { display: none; }
-	.parish-masthead__cross { width: 26px; height: 34px; }
+	.parish-masthead { padding: 0.6rem 0; gap: 0.75rem; }
+	.parish-masthead__cross { width: 22px; height: 29px; }
+	.parish-masthead__title { font-size: 1.2rem; }
+	.parish-masthead__subtitle { display: none; }
 	.parish-nav__toggle {
 		display: flex;
+		flex: none;
 		align-items: center;
 		gap: 0.5rem;
-		width: 100%;
-		padding: 0.75rem 0;
+		min-height: 44px;
+		padding: 0 0.85rem;
 		background: none;
-		border: 0;
+		border: 1px solid var(--wp--preset--color--border);
+		border-radius: 4px;
 		font: inherit;
 		font-weight: 700;
 		color: var(--wp--preset--color--ink);
 		cursor: pointer;
 	}
-	.parish-nav ul { display: none; flex-direction: column; padding-bottom: 0.5rem; }
-	.parish-nav.is-open ul { display: flex; }
-	.parish-nav a { padding: 0.6rem 0; }
+	.parish-nav { display: none; }
+	.parish-nav.is-open { display: block; }
+	.parish-nav ul { flex-direction: column; padding: 0.25rem 0 0.5rem; }
+	.parish-nav a { padding: 0.7rem 0; }
 	.parish-nav .current-menu-item > a { box-shadow: none; }
 	.parish-nav .sub-menu,
 	.parish-nav .children {
@@ -169,6 +198,13 @@ Text Domain: parish-cathedral
 }
 
 /* ---------- Content helpers ---------- */
+
+/* Same content in two places: e.g. service times at the top on phones (where
+   columns stack and the sidebar ends up at the bottom), in the sidebar on desktop.
+   781px is where WordPress stacks columns. */
+@media (max-width: 781px) { .parish-desktop-only { display: none !important; } }
+@media (min-width: 782px) { .parish-mobile-only { display: none !important; } }
+.parish-mobile-only { margin-bottom: var(--wp--preset--spacing--50); }
 
 /* "Info card" block style — used for the sidebar boxes (services, address, contacts). */
 .is-style-parish-card {
@@ -185,6 +221,21 @@ Text Domain: parish-cathedral
 	margin-bottom: 0.5rem;
 }
 .is-style-parish-card p { margin: 0.25rem 0; }
+
+/* "Full schedule", "All clergy"… and phone numbers: padded to a comfortable tap size. */
+.parish-more a,
+.parish-embed__link a,
+.parish-embed__subscribe a,
+.parish-post-nav a {
+	display: inline-block;
+	padding: 0.65rem 0;
+}
+/* Phone numbers often sit mid-sentence: inline padding enlarges the tap area
+   without pushing the lines of text apart. */
+a[href^="tel:"] { padding: 0.65rem 0; white-space: nowrap; }
+.parish-embed__link,
+.parish-embed__subscribe { margin: 0.25rem 0 0; }
+.is-style-parish-card .parish-more { margin: 0; }
 
 /* Time-table list: "Saturday Vigil ....... 5.00 pm" */
 .is-style-parish-timetable {
@@ -227,7 +278,7 @@ Text Domain: parish-cathedral
 	object-fit: cover;
 	border-radius: 4px;
 }
-.parish-person h3 { margin: 0; font-size: var(--wp--preset--font-size--large); }
+.parish-person h2 { margin: 0; font-size: var(--wp--preset--font-size--large); }
 .parish-person .parish-person__role {
 	margin: 0;
 	color: var(--wp--preset--color--accent);
@@ -236,6 +287,36 @@ Text Domain: parish-cathedral
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
 }
+
+/* Phones: small photo beside the name instead of a full-width portrait. */
+@media (max-width: 600px) {
+	.parish-person:has(.parish-person__photo) {
+		display: grid;
+		grid-template-columns: 88px 1fr;
+		column-gap: 1rem;
+		align-items: start;
+	}
+	.parish-person .parish-person__photo { grid-row: 1 / span 3; margin: 0; }
+	.parish-person .parish-person__photo img { max-width: 88px; }
+	.parish-person > :not(.parish-person__photo) { grid-column: 2; }
+}
+
+/* Search results: dates only make sense for news, not pages. */
+.search .type-page .wp-block-post-date { display: none; }
+
+/* Single news post: back link and labelled previous / next. */
+.parish-post-nav {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 0.5rem 2rem;
+}
+.parish-post-nav__label {
+	display: block;
+	color: var(--wp--preset--color--muted);
+	font-size: var(--wp--preset--font-size--small);
+}
+.parish-post-nav__next { text-align: right; margin-left: auto; }
 
 /* Embeds: Google Calendar & Maps */
 .parish-embed iframe {
@@ -254,7 +335,7 @@ Text Domain: parish-cathedral
 	color: #e9e2d8;
 	font-size: var(--wp--preset--font-size--small);
 }
-.parish-footer a { color: #fff; }
+.parish-footer a { color: #fff; display: inline-block; padding: 0.35rem 0; }
 .parish-footer__inner {
 	max-width: var(--wp--style--global--wide-size);
 	margin: 0 auto;
@@ -272,6 +353,30 @@ Text Domain: parish-cathedral
 	margin: 0 0 0.6rem;
 }
 .parish-footer p { margin: 0 0 0.4rem; }
+.parish-search { display: flex; gap: 0.4rem; }
+.parish-search input[type="search"] {
+	flex: 1;
+	min-width: 0;
+	min-height: 44px;
+	padding: 0 0.6rem;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	border-radius: 4px;
+	background: rgba(255, 255, 255, 0.08);
+	color: #fff;
+	font: inherit;
+}
+.parish-search input::placeholder { color: #b7ada1; }
+.parish-search button {
+	min-height: 44px;
+	padding: 0 0.9rem;
+	border: 0;
+	border-radius: 4px;
+	background: var(--wp--preset--color--primary);
+	color: #fff;
+	font: inherit;
+	font-weight: 700;
+	cursor: pointer;
+}
 .parish-footer__legal {
 	max-width: var(--wp--style--global--wide-size);
 	margin: 0 auto;

@@ -49,6 +49,74 @@ add_action(
 );
 
 /**
+ * Browser-tab icon (the Orthodox cross) until an admin sets a Site Icon
+ * under Appearance → Editor → Site Identity.
+ */
+add_action(
+	'wp_head',
+	function () {
+		if ( ! has_site_icon() ) {
+			printf( '<link rel="icon" href="%s" type="image/svg+xml">' . "\n", esc_url( get_theme_file_uri( 'assets/icon.svg' ) ) );
+		}
+	}
+);
+
+/**
+ * Description and Open Graph tags, so links shared on WhatsApp or Facebook
+ * show a proper title, summary and (for news with a photo) an image.
+ * Skipped if an SEO plugin is installed, as it does this itself.
+ */
+add_action(
+	'wp_head',
+	function () {
+		if ( defined( 'WPSEO_VERSION' ) || class_exists( 'RankMath' ) ) {
+			return;
+		}
+		$site  = parish_t( 'London Orthodox Cathedral', 'Лондонский православный собор' );
+		$title = is_front_page() ? $site : wp_get_document_title();
+		$desc  = parish_t(
+			'Russian Orthodox Cathedral of the Nativity of the Mother of God and the Holy Royal Martyrs (ROCOR), 57 Harvard Road, Chiswick, London W4 4ED. Services, news and parish life.',
+			'Русский православный собор Рождества Пресвятой Богородицы и Святых Царственных Мучеников (РПЦЗ), 57 Harvard Road, Чизик, Лондон W4 4ED. Богослужения, новости и приходская жизнь.'
+		);
+		$image = '';
+		if ( is_singular() && ! is_front_page() ) {
+			$post = get_queried_object();
+			if ( has_excerpt( $post ) || 'post' === $post->post_type ) {
+				$desc = wp_trim_words( wp_strip_all_tags( get_the_excerpt( $post ) ), 30 );
+			}
+			$image = (string) get_the_post_thumbnail_url( $post, 'large' );
+		}
+		$tags = array(
+			'og:type'        => is_singular( 'post' ) ? 'article' : 'website',
+			'og:site_name'   => $site,
+			'og:title'       => $title,
+			'og:description' => $desc,
+			'og:url'         => is_singular() ? get_permalink() : '',
+			'og:locale'      => 'ru' === parish_lang() ? 'ru_RU' : 'en_GB',
+			'og:image'       => $image,
+		);
+		printf( '<meta name="description" content="%s">' . "\n", esc_attr( $desc ) );
+		foreach ( array_filter( $tags ) as $property => $content ) {
+			printf( '<meta property="%s" content="%s">' . "\n", esc_attr( $property ), esc_attr( $content ) );
+		}
+	}
+);
+
+/**
+ * Hide menu links to pages that aren't published yet (e.g. the photo gallery,
+ * which starts as a draft). Publishing the page makes its link appear.
+ */
+add_filter(
+	'wp_nav_menu_objects',
+	function ( array $items ): array {
+		return array_filter(
+			$items,
+			fn( $item ) => 'post_type' !== $item->type || 'publish' === get_post_status( (int) $item->object_id )
+		);
+	}
+);
+
+/**
  * Block styles that editors can pick from the sidebar ("Styles" panel),
  * so they never need to touch CSS.
  */

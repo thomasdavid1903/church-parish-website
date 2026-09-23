@@ -11,6 +11,7 @@ It is built on **WordPress** so that it runs on the parish's existing Hostinger 
 | `tools/seed.php` | Builds the page structure and draft content in English and Russian on a fresh install. |
 | `blueprint.json` | Local dev setup for [WordPress Playground](https://wordpress.github.io/wordpress-playground/). |
 | `docs/PROPOSAL.md` | Proposal for the parish council: requirements, approach, costs and timeline. |
+| `docs/personas/` | Reusable test personas and their feedback (`feedback/`). Run with `/persona-test` in Claude Code. |
 
 ## How the requirements are met
 

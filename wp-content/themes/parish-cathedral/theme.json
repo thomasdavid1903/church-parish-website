@@ -72,6 +72,11 @@
 				{ "slug": "50", "name": "L", "size": "clamp(1.75rem, 4vw, 2.5rem)" },
 				{ "slug": "60", "name": "XL", "size": "clamp(2.5rem, 6vw, 4rem)" }
 			]
+		},
+		"blocks": {
+			"core/image": {
+				"lightbox": { "enabled": true, "allowEditing": true }
+			}
 		}
 	},
 	"styles": {

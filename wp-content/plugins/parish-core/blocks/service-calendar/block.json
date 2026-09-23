@@ -9,7 +9,8 @@
 	"keywords": [ "calendar", "services", "schedule", "расписание" ],
 	"textdomain": "parish-core",
 	"attributes": {
-		"view": { "type": "string", "default": "AGENDA", "enum": [ "AGENDA", "WEEK", "MONTH" ] },
+		"view": { "type": "string", "default": "MONTH", "enum": [ "AGENDA", "WEEK", "MONTH" ] },
+		"mobileView": { "type": "string", "default": "AGENDA", "enum": [ "AGENDA", "WEEK", "MONTH" ] },
 		"height": { "type": "number", "default": 600 },
 		"calendarId": { "type": "string", "default": "" }
 	},

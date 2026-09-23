@@ -19,6 +19,7 @@ define( 'PARISH_CORE_DIR', __DIR__ );
 require_once __DIR__ . '/includes/group-leaders.php';
 require_once __DIR__ . '/includes/settings.php';
 require_once __DIR__ . '/includes/calendar.php';
+require_once __DIR__ . '/includes/transliterate.php';
 
 register_activation_hook( __FILE__, 'parish_core_add_roles' );
 
