@@ -218,6 +218,15 @@ Text Domain: parish-cathedral
 .parish-news-item .wp-block-post-excerpt__excerpt { margin: 0; color: var(--wp--preset--color--muted); }
 
 /* Clergy / group-leader cards */
+.parish-person .parish-person__photo { margin: 0 0 1rem; }
+.parish-person .parish-person__photo img {
+	display: block;
+	width: 100%;
+	max-width: 250px;
+	aspect-ratio: 250 / 320;
+	object-fit: cover;
+	border-radius: 4px;
+}
 .parish-person h3 { margin: 0; font-size: var(--wp--preset--font-size--large); }
 .parish-person .parish-person__role {
 	margin: 0;

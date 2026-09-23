@@ -109,9 +109,54 @@ function sd_latest_news( int $count ): string {
 <!-- /wp:query -->' . "\n\n";
 }
 
-function sd_person( string $role, string $name, string $details ): string {
+/**
+ * Import a photo from tools/clergy/ into the Media Library (once) and return
+ * an image block for it. Returns '' if the file is missing.
+ */
+function sd_clergy_photo( string $file, string $alt ): string {
+	$path = __DIR__ . '/clergy/' . $file;
+	if ( ! file_exists( $path ) ) {
+		return '';
+	}
+	$slug     = 'clergy-' . pathinfo( $file, PATHINFO_FILENAME );
+	$existing = get_posts(
+		array(
+			'name'        => $slug,
+			'post_type'   => 'attachment',
+			'post_status' => 'inherit',
+			'numberposts' => 1,
+		)
+	);
+	if ( $existing ) {
+		$id = $existing[0]->ID;
+	} else {
+		require_once ABSPATH . 'wp-admin/includes/image.php';
+		$upload = wp_upload_bits( $file, null, file_get_contents( $path ) );
+		if ( $upload['error'] ) {
+			echo 'Image error: ' . esc_html( $upload['error'] ) . "\n";
+			return '';
+		}
+		$id = wp_insert_attachment(
+			array(
+				'post_title'     => $alt,
+				'post_name'      => $slug,
+				'post_mime_type' => 'image/jpeg',
+				'post_status'    => 'inherit',
+			),
+			$upload['file']
+		);
+		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $upload['file'] ) );
+		update_post_meta( $id, '_wp_attachment_image_alt', $alt );
+	}
+	$url = esc_url( wp_get_attachment_url( $id ) );
+	$alt = esc_attr( $alt );
+	return "<!-- wp:image {\"id\":{$id},\"sizeSlug\":\"full\",\"linkDestination\":\"none\",\"className\":\"parish-person__photo\"} -->\n<figure class=\"wp-block-image size-full parish-person__photo\"><img src=\"{$url}\" alt=\"{$alt}\" class=\"wp-image-{$id}\"/></figure>\n<!-- /wp:image -->\n\n";
+}
+
+function sd_person( string $role, string $name, string $details, string $photo = '' ): string {
 	return sd_card(
-		sd_p( $role, 'parish-person__role' ) . sd_h( $name, 3 ) . sd_p( $details ),
+		( $photo ? sd_clergy_photo( $photo, wp_strip_all_tags( $name ) ) : '' )
+		. sd_p( $role, 'parish-person__role' ) . sd_h( $name, 3 ) . sd_p( $details ),
 		'parish-person'
 	);
 }
@@ -555,16 +600,16 @@ function sd_pages(): array {
 			'title'   => 'Clergy',
 			'content' => sd_columns(
 				array(
-					sd_person( 'Cathedral Rector', 'His Grace Bishop Irenei of London and Western Europe', 'The Cathedral is the See of the Ruling Bishop of the Diocese of Great Britain and Western Europe.' ),
-					sd_person( 'Ecclesiarch', 'Archpriest Vitaly Serapinas', 'Baptisms, weddings and other services<br>+44 7935 700 721' ),
-					sd_person( 'Cathedral Priest', 'Archpriest Yaroslav Hudymenko', '+44 7563 407 991' ),
+					sd_person( 'Cathedral Rector', 'His Grace Bishop Irenei of London and Western Europe', 'The Cathedral is the See of the Ruling Bishop of the Diocese of Great Britain and Western Europe.', 'irenei.jpg' ),
+					sd_person( 'Ecclesiarch', 'Archpriest Vitaly Serapinas', 'Baptisms, weddings and other services<br>+44 7935 700 721', 'vitaly-serapinas.jpg' ),
+					sd_person( 'Cathedral Priest', 'Archpriest Yaroslav Hudymenko', '+44 7563 407 991', 'yaroslav-hudymenko.jpg' ),
 				)
 			)
 			. sd_columns(
 				array(
 					sd_person( 'Priest', 'Hieromonk Theodore', '+44 7534 694 534' ),
-					sd_person( 'Retired Priest', 'Archpriest Peter Baulk', '+44 771 432 4482' ),
-					sd_person( 'Cathedral Deacon', 'Deacon Andrei Borisas', '+44 7876 474358' ),
+					sd_person( 'Retired Priest', 'Archpriest Peter Baulk', '+44 771 432 4482', 'peter-baulk.jpg' ),
+					sd_person( 'Cathedral Deacon', 'Deacon Andrei Borisas', '+44 7876 474358', 'andrei-borisas.jpg' ),
 				)
 			)
 			. sd_columns(
@@ -580,16 +625,16 @@ function sd_pages(): array {
 			'title'   => 'Духовенство',
 			'content' => sd_columns(
 				array(
-					sd_person( 'Настоятель собора', 'Преосвященнейший Ириней, епископ Лондонский и Западноевропейский', 'Собор является кафедрой правящего архиерея Епархии Великобритании и Западной Европы.' ),
-					sd_person( 'Ключарь', 'Протоиерей Виталий Серапинас', 'Крещения, венчания и другие требы<br>+44 7935 700 721' ),
-					sd_person( 'Клирик собора', 'Протоиерей Ярослав Гудименко', '+44 7563 407 991' ),
+					sd_person( 'Настоятель собора', 'Преосвященнейший Ириней, епископ Лондонский и Западноевропейский', 'Собор является кафедрой правящего архиерея Епархии Великобритании и Западной Европы.', 'irenei.jpg' ),
+					sd_person( 'Ключарь', 'Протоиерей Виталий Серапинас', 'Крещения, венчания и другие требы<br>+44 7935 700 721', 'vitaly-serapinas.jpg' ),
+					sd_person( 'Клирик собора', 'Протоиерей Ярослав Гудименко', '+44 7563 407 991', 'yaroslav-hudymenko.jpg' ),
 				)
 			)
 			. sd_columns(
 				array(
 					sd_person( 'Священник', 'Иеромонах Феодор', '+44 7534 694 534' ),
-					sd_person( 'Заштатный священник', 'Протоиерей Петр Болк', '+44 771 432 4482' ),
-					sd_person( 'Диакон собора', 'Диакон Андрей Борисас', '+44 7876 474358' ),
+					sd_person( 'Заштатный священник', 'Протоиерей Петр Болк', '+44 771 432 4482', 'peter-baulk.jpg' ),
+					sd_person( 'Диакон собора', 'Диакон Андрей Борисас', '+44 7876 474358', 'andrei-borisas.jpg' ),
 				)
 			)
 			. sd_columns(
