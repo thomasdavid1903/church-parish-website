@@ -93,6 +93,7 @@ add_shortcode(
 			<div>
 				<h2><?php echo esc_html( parish_t( 'Cathedral address', 'Адрес собора' ) ); ?></h2>
 				<p>57 Harvard Road<br>London W4 4ED</p>
+				<p><a href="https://maps.app.goo.gl/6hcgWaNTynMqAhcx6"><?php echo esc_html( parish_t( 'Open in Google Maps', 'Открыть в Google Картах' ) ); ?></a></p>
 				<p><a href="<?php echo esc_url( parish_page_url( 'visit' ) ); ?>"><?php echo esc_html( parish_t( 'Directions and visiting', 'Как добраться' ) ); ?></a></p>
 			</div>
 			<div>

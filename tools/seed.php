@@ -198,6 +198,9 @@ function sd_languages(): void {
 function sd_pages(): array {
 	$pages = array();
 
+	// Opens the Maps app on phones, so visitors get directions from where they are.
+	$maps_url = 'https://maps.app.goo.gl/6hcgWaNTynMqAhcx6';
+
 	/* ---- Home ---- */
 	$pages['home'] = array(
 		'en' => array(
@@ -235,7 +238,7 @@ function sd_pages(): array {
 						. sd_card(
 							sd_h( 'Cathedral address', 3 )
 							. sd_p( '57 Harvard Road<br>London W4 4ED' )
-							. sd_p( '<a href="{{url:visit}}">Map and directions</a>' )
+							. sd_p( '<a href="' . $maps_url . '">Open in Google Maps</a><br><a href="{{url:visit}}">Directions and visiting</a>' )
 						)
 						. sd_card(
 							sd_h( 'Church shop', 3 )
@@ -307,7 +310,7 @@ function sd_pages(): array {
 						. sd_card(
 							sd_h( 'Адрес собора', 3 )
 							. sd_p( '57 Harvard Road<br>London W4 4ED' )
-							. sd_p( '<a href="{{url:visit}}">Карта и как добраться</a>' )
+							. sd_p( '<a href="' . $maps_url . '">Открыть в Google Картах</a><br><a href="{{url:visit}}">Как добраться</a>' )
 						)
 						. sd_card(
 							sd_h( 'Церковная лавка', 3 )
@@ -673,7 +676,7 @@ function sd_pages(): array {
 					),
 					array(
 						'36%',
-						sd_card( sd_h( 'Address', 3 ) . sd_p( 'Cathedral of the Nativity of the Mother of God<br>57 Harvard Road<br>London W4 4ED' ) )
+						sd_card( sd_h( 'Address', 3 ) . sd_p( 'Cathedral of the Nativity of the Mother of God<br>57 Harvard Road<br>London W4 4ED' ) . sd_p( '<a href="' . $maps_url . '">Open in Google Maps</a>' ) )
 						. sd_card( sd_h( 'Contact', 3 ) . sd_p( 'For baptisms, weddings and other services, please contact Archpriest Vitaly Serapinas on +44 7935 700 721.' ) . sd_p( 'For general enquiries or use of the Parish House, please contact the Churchwarden.' ) . sd_p( '<a href="{{url:clergy}}">All clergy contacts</a>' ) )
 						. sd_card( sd_h( 'Opening times', 3 ) . sd_p( 'The Cathedral is open during all services on the <a href="{{url:services}}">schedule</a>, and at other times by appointment.' ) ),
 					),
@@ -702,7 +705,7 @@ function sd_pages(): array {
 					),
 					array(
 						'36%',
-						sd_card( sd_h( 'Адрес', 3 ) . sd_p( 'Собор Рождества Пресвятой Богородицы<br>57 Harvard Road<br>London W4 4ED' ) )
+						sd_card( sd_h( 'Адрес', 3 ) . sd_p( 'Собор Рождества Пресвятой Богородицы<br>57 Harvard Road<br>London W4 4ED' ) . sd_p( '<a href="' . $maps_url . '">Открыть в Google Картах</a>' ) )
 						. sd_card( sd_h( 'Контакты', 3 ) . sd_p( 'По вопросам крещения, венчания и других треб обращайтесь к протоиерею Виталию Серапинасу: +44 7935 700 721.' ) . sd_p( 'По общим вопросам и использованию Приходского дома обращайтесь к старосте.' ) . sd_p( '<a href="{{url:clergy}}">Все контакты духовенства</a>' ) )
 						. sd_card( sd_h( 'Часы работы', 3 ) . sd_p( 'Собор открыт во время всех богослужений по <a href="{{url:services}}">расписанию</a>, а в другое время — по договорённости.' ) ),
 					),
