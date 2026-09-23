@@ -28,19 +28,17 @@ It is built on **WordPress** so that it runs on the parish's existing Hostinger 
 Needs only Node.js 18+ (no Docker, PHP or MySQL):
 
 ```bash
-npm install
-```
-
-```bash
 npm run dev
 ```
+
+No `npm install` step is needed. The script uses `npx` to fetch the pinned WordPress Playground CLI if it isn't already installed. To use a different port: `npm run dev -- --port=9500`.
 
 This opens a throwaway WordPress at http://127.0.0.1:9400 with Polylang installed, the theme and plugin mounted live from this repo, and demo content seeded. Edits to theme and plugin files show up on refresh. The database resets each time you restart.
 
 - Admin: http://127.0.0.1:9400/wp-admin/ (Playground logs you in automatically)
 - Demo group leader: user `headsister`, password `headsister` (can edit only the Sisterhood page, EN and RU)
 
-> `.npmrc` sets `ignore-scripts=true` because an optional native dependency of the Playground CLI (`fs-ext`) fails to build on Windows. It isn't needed.
+> `.npmrc` sets `ignore-scripts=true` because an optional native dependency of the Playground CLI (`fs-ext`) can fail to build (it does on Windows). It isn't needed.
 
 ## Deploying to Hostinger
 
