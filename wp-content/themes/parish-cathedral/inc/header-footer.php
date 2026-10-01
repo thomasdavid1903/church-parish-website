@@ -75,8 +75,8 @@ add_shortcode(
 			<div class="parish-masthead">
 				<?php echo $cross; // phpcs:ignore WordPress.Security.EscapeOutput -- static SVG. ?>
 				<div class="parish-masthead__text">
-					<?php $title_tag = is_front_page() ? 'h1' : 'p'; // The front page has no other H1. ?>
-					<<?php echo $title_tag; ?> class="parish-masthead__title"><a href="<?php echo esc_url( function_exists( 'pll_home_url' ) ? pll_home_url() : home_url( '/' ) ); ?>"><?php echo esc_html( parish_t( 'London Orthodox Cathedral', 'Лондонский православный собор' ) ); ?></a></<?php echo $title_tag; ?>>
+					<?php // Not a heading: every page, the home page included (its photo banner), has its own H1. ?>
+					<p class="parish-masthead__title"><a href="<?php echo esc_url( function_exists( 'pll_home_url' ) ? pll_home_url() : home_url( '/' ) ); ?>"><?php echo esc_html( parish_t( 'London Orthodox Cathedral', 'Лондонский православный собор' ) ); ?></a></p>
 					<p class="parish-masthead__subtitle"><?php echo esc_html( parish_t( 'of the Nativity of the Mother of God and the Holy Royal Martyrs', 'Рождества Пресвятой Богородицы и Святых Царственных Мучеников' ) ); ?></p>
 				</div>
 				<button class="parish-nav__toggle" type="button" aria-expanded="false" aria-controls="parish-nav">

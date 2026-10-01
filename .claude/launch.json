@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev", "--", "--port=9401"],
       "port": 9401
+    },
+    {
+      "name": "wordpress-9402",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port=9402"],
+      "port": 9402
     }
   ]
 }

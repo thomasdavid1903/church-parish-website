@@ -110,15 +110,13 @@ function sd_latest_news( int $count ): string {
 }
 
 /**
- * Import a photo from tools/clergy/ into the Media Library (once) and return
- * an image block for it. Returns '' if the file is missing.
+ * Import an image file into the Media Library (once, keyed by $slug) and
+ * return its attachment ID, or 0 if the file is missing or fails to upload.
  */
-function sd_clergy_photo( string $file, string $alt ): string {
-	$path = __DIR__ . '/clergy/' . $file;
+function sd_import_image( string $path, string $slug, string $alt ): int {
 	if ( ! file_exists( $path ) ) {
-		return '';
+		return 0;
 	}
-	$slug     = 'clergy-' . pathinfo( $file, PATHINFO_FILENAME );
 	$existing = get_posts(
 		array(
 			'name'        => $slug,
@@ -128,25 +126,36 @@ function sd_clergy_photo( string $file, string $alt ): string {
 		)
 	);
 	if ( $existing ) {
-		$id = $existing[0]->ID;
-	} else {
-		require_once ABSPATH . 'wp-admin/includes/image.php';
-		$upload = wp_upload_bits( $file, null, file_get_contents( $path ) );
-		if ( $upload['error'] ) {
-			echo 'Image error: ' . esc_html( $upload['error'] ) . "\n";
-			return '';
-		}
-		$id = wp_insert_attachment(
-			array(
-				'post_title'     => $alt,
-				'post_name'      => $slug,
-				'post_mime_type' => 'image/jpeg',
-				'post_status'    => 'inherit',
-			),
-			$upload['file']
-		);
-		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $upload['file'] ) );
-		update_post_meta( $id, '_wp_attachment_image_alt', $alt );
+		return $existing[0]->ID;
+	}
+	require_once ABSPATH . 'wp-admin/includes/image.php';
+	$upload = wp_upload_bits( basename( $path ), null, file_get_contents( $path ) );
+	if ( $upload['error'] ) {
+		echo 'Image error: ' . esc_html( $upload['error'] ) . "\n";
+		return 0;
+	}
+	$id = wp_insert_attachment(
+		array(
+			'post_title'     => $alt,
+			'post_name'      => $slug,
+			'post_mime_type' => 'image/jpeg',
+			'post_status'    => 'inherit',
+		),
+		$upload['file']
+	);
+	wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $upload['file'] ) );
+	update_post_meta( $id, '_wp_attachment_image_alt', $alt );
+	return $id;
+}
+
+/**
+ * Import a photo from tools/clergy/ into the Media Library (once) and return
+ * an image block for it. Returns '' if the file is missing.
+ */
+function sd_clergy_photo( string $file, string $alt ): string {
+	$id = sd_import_image( __DIR__ . '/clergy/' . $file, 'clergy-' . pathinfo( $file, PATHINFO_FILENAME ), $alt );
+	if ( ! $id ) {
+		return '';
 	}
 	$url = esc_url( wp_get_attachment_url( $id ) );
 	$alt = esc_attr( $alt );
@@ -161,10 +170,145 @@ function sd_person( string $role, string $name, string $details, string $photo =
 	);
 }
 
+const SD_CREDIT_SB = 'Protodeacon Sergei Baranoff';
+
+/**
+ * Photos of the Cathedral and parish life in tools/photos/, taken from the
+ * parish pages on orthodox-europe.org and from Protodeacon Sergei's albums.
+ * Key => [ file, English alt, Russian alt, optional photo credit ].
+ */
+function sd_photos(): array {
+	return array(
+		'hero-interior'        => array( 'hero-interior.jpg', 'Frescoes and the great chandelier inside the Cathedral', 'Росписи и паникадило в соборе' ),
+		'interior-iconostasis' => array( 'interior-iconostasis.jpg', 'Sunlight falling on the iconostasis and frescoes', 'Солнечный свет на иконостасе и росписях собора' ),
+		'dome-fresco'          => array( 'dome-fresco.jpg', 'Christ Pantocrator in the central dome', 'Христос Вседержитель в центральном куполе' ),
+		'exterior-dome'        => array( 'exterior-dome.jpg', 'The blue dome of the Cathedral against the sky', 'Синий купол собора на фоне неба' ),
+		'exterior-side'        => array( 'exterior-side.jpg', 'The Cathedral from the churchyard', 'Собор со стороны церковного двора' ),
+		'icon-flowers'         => array( 'icon-flowers.jpg', 'An icon of the Mother of God decorated with flowers', 'Икона Божией Матери, украшенная цветами' ),
+		'vigil-candles'        => array( 'vigil-candles.jpg', 'The faithful holding candles at a service', 'Молящиеся со свечами за богослужением' ),
+		'hierarchical-liturgy' => array( 'hierarchical-liturgy.jpg', 'A hierarchical service in the Cathedral', 'Архиерейское богослужение в соборе' ),
+		'clergy-group'         => array( 'clergy-group.jpg', 'The Bishop and clergy of the Cathedral', 'Владыка и духовенство собора' ),
+		'willow-blessing'      => array( 'willow-blessing.jpg', 'A priest blesses a parishioner holding willow branches', 'Священник благословляет прихожанку с вербой' ),
+		'holy-water-blessing'  => array( 'holy-water-blessing.jpg', 'The faithful blessed with holy water at a feast', 'Окропление святой водой на празднике' ),
+		'candle'               => array( 'candle.jpg', 'Lighting a candle', 'Возжжение свечи' ),
+		'parish-group'         => array( 'parish-group.jpg', 'Parishioners in front of the iconostasis', 'Прихожане у иконостаса' ),
+		'youth-group'          => array( 'youth-group.jpg', 'The Youth Group in the Parish House', 'Молодёжная группа в Приходском доме' ),
+		'sisterhood'           => array( 'sisterhood.jpg', 'Sisters preparing flowers for a feast', 'Сёстры готовят цветы к празднику' ),
+		'sunday-school'        => array( 'sunday-school.jpg', 'Sunday School children with the Bishop', 'Дети воскресной школы с владыкой' ),
+		'choir-music'          => array( 'choir-music.jpg', 'Choir music in Church Slavonic', 'Ноты хора на церковнославянском' ),
+		'food-bank-team'       => array( 'food-bank-team.jpg', 'Food Bank volunteers outside the Cathedral', 'Волонтёры продуктового банка у собора' ),
+		'book-cover'           => array( 'book-cover.jpg', 'Cover of the book “The London Cathedral”', 'Обложка книги «The London Cathedral»' ),
+		// Photos by Protodeacon Sergei Baranoff (4th element: photo credit).
+		'sb-nave-iconostasis'  => array( 'sb-nave-iconostasis.jpg', 'The nave, chandelier and iconostasis of the Cathedral', 'Храм, паникадило и иконостас собора', SD_CREDIT_SB ),
+		'sb-morning-light'     => array( 'sb-morning-light.jpg', 'Morning light falling through the Cathedral during the Liturgy', 'Утренний свет в соборе во время Литургии', SD_CREDIT_SB ),
+		'sb-feast-congregation' => array( 'sb-feast-congregation.jpg', 'The faithful at a feast-day service', 'Молящиеся на праздничном богослужении', SD_CREDIT_SB ),
+		'sb-chandelier-vigil'  => array( 'sb-chandelier-vigil.jpg', 'The All-night Vigil under the great chandelier', 'Всенощное бдение под паникадилом', SD_CREDIT_SB ),
+		'sb-pascha-crowd'      => array( 'sb-pascha-crowd.jpg', 'The Cathedral full of worshippers at a great feast', 'Собор, полный молящихся, на великий праздник', SD_CREDIT_SB ),
+		'sb-door-garland'      => array( 'sb-door-garland.jpg', 'The Cathedral door decorated with a garland of flowers', 'Двери собора, украшенные цветочной гирляндой', SD_CREDIT_SB ),
+		'sb-procession'        => array( 'sb-procession.jpg', 'A procession of the Cross around the Cathedral', 'Крестный ход вокруг собора', SD_CREDIT_SB ),
+		'sb-clergy-feast'      => array( 'sb-clergy-feast.jpg', 'The Bishop, clergy and servers on the patronal feast', 'Владыка, духовенство и алтарники в престольный праздник', SD_CREDIT_SB ),
+		'sb-bishop-blessing'   => array( 'sb-bishop-blessing.jpg', 'The Bishop blessing the people with the dikirion and trikirion', 'Архиерейское благословение дикирием и трикирием', SD_CREDIT_SB ),
+		'sb-icon-lampada'      => array( 'sb-icon-lampada.jpg', 'An icon of the Mother of God with a burning lampada', 'Икона Божией Матери с горящей лампадой', SD_CREDIT_SB ),
+		'sb-icon-kiot'         => array( 'sb-icon-kiot.jpg', 'The Kazan icon of the Mother of God in its carved case', 'Казанская икона Божией Матери в резном киоте', SD_CREDIT_SB ),
+		'sb-shroud-flowers'    => array( 'sb-shroud-flowers.jpg', 'The Holy Shroud decorated with flowers', 'Плащаница, украшенная цветами', SD_CREDIT_SB ),
+		'sb-communion'         => array( 'sb-communion.jpg', 'The Bishop giving Holy Communion', 'Владыка причащает верующих', SD_CREDIT_SB ),
+		'sb-theophany-water'   => array( 'sb-theophany-water.jpg', 'The Great Blessing of Water at Theophany', 'Великое освящение воды на Богоявление', SD_CREDIT_SB ),
+		'sb-feast-red'         => array( 'sb-feast-red.jpg', 'A festal service with the clergy in red vestments', 'Праздничное богослужение, духовенство в красных облачениях', SD_CREDIT_SB ),
+		'sb-vigil-crowd'       => array( 'sb-vigil-crowd.jpg', 'The faithful at the evening service', 'Молящиеся на вечернем богослужении', SD_CREDIT_SB ),
+	);
+}
+
+/**
+ * Attachment ID for a photo from sd_photos(), importing it on first use.
+ * $lang 'ru' imports a separate copy with Russian alt text, for featured images
+ * (a page banner takes its alt text from the attachment, not the page).
+ */
+function sd_photo_id( string $key, string $lang = 'en' ): int {
+	[ $file, $alt, $alt_ru ] = sd_photos()[ $key ];
+	$credit = sd_photos()[ $key ][3] ?? '';
+	if ( 'ru' === $lang ) {
+		$id = sd_import_image( __DIR__ . '/photos/' . $file, 'photo-' . $key . '-ru', $alt_ru );
+	} else {
+		$id = sd_import_image( __DIR__ . '/photos/' . $file, 'photo-' . $key, $alt );
+	}
+	if ( $id && $credit ) {
+		update_post_meta( $id, 'parish_photo_credit', $credit );
+	}
+	return $id;
+}
+
+/**
+ * Image block for a photo from sd_photos(), with alt text in the page's language.
+ */
+function sd_photo( string $key, string $lang, string $class = '', string $size = 'large' ): string {
+	$id = sd_photo_id( $key );
+	if ( ! $id ) {
+		return '';
+	}
+	$url   = esc_url( wp_get_attachment_image_url( $id, $size ) ?: wp_get_attachment_url( $id ) );
+	$alt   = esc_attr( sd_photos()[ $key ][ 'ru' === $lang ? 2 : 1 ] );
+	$attrs = array( 'id' => $id, 'sizeSlug' => $size, 'linkDestination' => 'none' );
+	if ( $class ) {
+		$attrs['className'] = $class;
+	}
+	$cls = trim( "wp-block-image size-{$size} {$class}" );
+	return '<!-- wp:image ' . wp_json_encode( $attrs ) . " -->\n<figure class=\"{$cls}\"><img src=\"{$url}\" alt=\"{$alt}\" class=\"wp-image-{$id}\"/></figure>\n<!-- /wp:image -->\n\n";
+}
+
+/**
+ * Gallery block of photos from sd_photos(). Photos open larger when clicked
+ * (lightbox is switched on for images in theme.json).
+ */
+function sd_gallery( array $keys, string $lang, int $columns = 3, string $class = '' ): string {
+	$images = '';
+	foreach ( $keys as $key ) {
+		$images .= sd_photo( $key, $lang );
+	}
+	$attrs = array( 'columns' => $columns, 'linkTo' => 'none' );
+	if ( $class ) {
+		$attrs['className'] = $class;
+	}
+	$cls = trim( "wp-block-gallery has-nested-images columns-{$columns} is-cropped {$class}" );
+	return '<!-- wp:gallery ' . wp_json_encode( $attrs ) . " -->\n<figure class=\"{$cls}\">{$images}</figure>\n<!-- /wp:gallery -->\n\n";
+}
+
+/**
+ * Full-width photo banner at the top of the home page (a Cover block, so the
+ * photo and text can be changed in the editor).
+ */
+function sd_hero( string $lang ): string {
+	$id = sd_photo_id( 'sb-nave-iconostasis' );
+	if ( ! $id ) {
+		return '';
+	}
+	$url = esc_url( wp_get_attachment_url( $id ) );
+	$t   = 'ru' === $lang
+		? array( 'Русская Православная Церковь Заграницей', 'Добро пожаловать в Лондонский православный собор', 'Приход в Лондоне с 1725 года · Чизик, Западный Лондон', 'Расписание богослужений', 'Как нас найти' )
+		: array( 'Russian Orthodox Church Outside Russia', 'Welcome to the London Orthodox Cathedral', 'A parish in London since 1725 · Chiswick, West London', 'Service times', 'Plan your visit' );
+
+	$inner = sd_p( $t[0], 'parish-hero__eyebrow' )
+		. "<!-- wp:heading {\"level\":1} -->\n<h1 class=\"wp-block-heading\">{$t[1]}</h1>\n<!-- /wp:heading -->\n\n"
+		. sd_p( $t[2], 'parish-hero__lead' )
+		. "<!-- wp:buttons -->\n<div class=\"wp-block-buttons\"><!-- wp:button -->\n<div class=\"wp-block-button\"><a class=\"wp-block-button__link wp-element-button\" href=\"{{url:services}}\">{$t[3]}</a></div>\n<!-- /wp:button -->\n\n"
+		. "<!-- wp:button {\"className\":\"is-style-outline\"} -->\n<div class=\"wp-block-button is-style-outline\"><a class=\"wp-block-button__link wp-element-button\" href=\"{{url:visit}}\">{$t[4]}</a></div>\n<!-- /wp:button --></div>\n<!-- /wp:buttons -->\n\n";
+
+	return '<!-- wp:cover {"url":"' . $url . '","id":' . $id . ',"dimRatio":70,"overlayColor":"ink","isUserOverlayColor":true,"minHeight":460,"align":"full","className":"parish-hero","layout":{"type":"constrained","contentSize":"1140px"}} -->' . "\n"
+		. '<div class="wp-block-cover alignfull parish-hero" style="min-height:460px"><span aria-hidden="true" class="wp-block-cover__background has-ink-background-color has-background-dim-70 has-background-dim"></span><img class="wp-block-cover__image-background wp-image-' . $id . '" alt="" src="' . $url . '" data-object-fit="cover"/><div class="wp-block-cover__inner-container">'
+		. $inner
+		. "</div></div>\n<!-- /wp:cover -->\n\n";
+}
+
+/**
+ * Embedded Google Map of the Cathedral.
+ */
+function sd_map( string $title, int $height = 380, string $class = '' ): string {
+	$cls = trim( "parish-embed {$class}" );
+	return sd_html( '<div class="' . $cls . '"><iframe src="https://www.google.com/maps?q=Russian+Orthodox+Cathedral,+57+Harvard+Road,+London+W4+4ED&amp;output=embed" height="' . $height . '" loading="lazy" title="' . $title . '"></iframe></div>' );
+}
+
 /**
  * A phone number that can be tapped to call.
- */
-function sd_tel( string $number ): string {
+ */function sd_tel( string $number ): string {
 	return '<a href="tel:' . preg_replace( '/[^\d+]/', '', $number ) . '">' . $number . '</a>';
 }
 
@@ -281,17 +425,18 @@ function sd_pages(): array {
 		'en' => array(
 			'slug'    => 'home',
 			'title'   => 'Home',
-			'content' => sd_columns(
+			'content' => sd_hero( 'en' )
+			. sd_columns(
 				array(
 					array(
 						'64%',
 						sd_regular_services( 'en', true, 'parish-mobile-only' )
-						. sd_title( 'Welcome' )
+						. sd_title( 'About the Cathedral' )
 						. sd_p( 'The Cathedral of the Nativity of the Mother of God and the Holy Royal Martyrs is the cathedral of the Diocese of Great Britain and Western Europe of the Russian Orthodox Church Outside Russia (ROCOR). Founded in 1725, it is one of the oldest Orthodox parishes in the British Isles. Today it worships in a new cathedral in Chiswick, West London, built in the Pskov style and consecrated in 2018.' )
 						. sd_p( 'The Divine Liturgy is normally celebrated four times a week, with evening services several times a week. Services are in Church Slavonic and English. <a href="{{url:visit}}">New to Orthodoxy? Read our guidance for visitors.</a>' )
 						. sd_title( 'Upcoming services' )
 						. sd_calendar( 'MONTH', 600 )
-						. sd_p( '<a href="{{url:services}}">Full schedule of services →</a>', 'parish-more' )
+						. sd_p( '<a href="{{url:services}}">Full schedule of services →</a><br><a href="{{url:services/readings}}">Today’s Scripture readings →</a>', 'parish-more' )
 						. sd_title( 'Latest news' )
 						. sd_latest_news( 4 )
 						. sd_p( '<a href="{{url:news}}">All news →</a>', 'parish-more' ),
@@ -302,6 +447,7 @@ function sd_pages(): array {
 						. sd_card(
 							sd_h( 'Cathedral address' )
 							. sd_p( '57 Harvard Road<br>London W4 4ED' )
+							. sd_map( 'Map showing the Cathedral, 57 Harvard Road, London W4 4ED', 220, 'parish-card-map' )
 							. sd_p( '<a href="' . $maps_url . '">Open in Google Maps</a><br><a href="{{url:visit}}">Directions and visiting</a>', 'parish-more' )
 						)
 						. sd_card(
@@ -329,31 +475,35 @@ function sd_pages(): array {
 					),
 				)
 			)
+			. sd_title( 'The Cathedral' )
+			. sd_gallery( array( 'interior-iconostasis', 'dome-fresco', 'exterior-dome', 'icon-flowers' ), 'en', 4, 'parish-photo-strip' )
+			. sd_p( '<a href="{{url:parish-life/gallery}}">More photos →</a>', 'parish-more' )
 			. sd_title( 'Parish life' )
 			. sd_columns(
 				array(
-					sd_card( sd_h( 'Sisterhood', 3 ) . sd_p( 'Visiting the sick, helping the poor, baking prosphora and caring for the vestments.' ) . sd_p( '<a href="{{url:parish-life/sisterhood}}">Sisterhood of St Xenia →</a>', 'parish-more' ) ),
-					sd_card( sd_h( 'Sunday School', 3 ) . sd_p( 'Classes in the Faith for children of the parish during the school year.' ) . sd_p( '<a href="{{url:parish-life/sunday-school}}">Sunday School →</a>', 'parish-more' ) ),
-					sd_card( sd_h( 'Youth Group', 3 ) . sd_p( 'Evening talks, pilgrimages, service projects and film nights for ages 14–30.' ) . sd_p( '<a href="{{url:parish-life/youth-group}}">Youth Group →</a>', 'parish-more' ) ),
-					sd_card( sd_h( 'Choir', 3 ) . sd_p( 'A mixed choir open to all who wish to sing. Rehearsals on Sundays at 9.00 am.' ) . sd_p( '<a href="{{url:parish-life/choir}}">Choir →</a>', 'parish-more' ) ),
-					sd_card( sd_h( 'Food Bank', 3 ) . sd_p( 'Free food every two weeks for families in need, run from the Cathedral House.' ) . sd_p( '<a href="{{url:parish-life/food-bank}}">Food Bank →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'sisterhood', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( 'Sisterhood', 3 ) . sd_p( 'Visiting the sick, helping the poor, baking prosphora and caring for the vestments.' ) . sd_p( '<a href="{{url:parish-life/sisterhood}}">Sisterhood of St Xenia →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'sunday-school', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( 'Sunday School', 3 ) . sd_p( 'Classes in the Faith for children of the parish during the school year.' ) . sd_p( '<a href="{{url:parish-life/sunday-school}}">Sunday School →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'youth-group', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( 'Youth Group', 3 ) . sd_p( 'Evening talks, pilgrimages, service projects and film nights for ages 14–30.' ) . sd_p( '<a href="{{url:parish-life/youth-group}}">Youth Group →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'choir-music', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( 'Choir', 3 ) . sd_p( 'A mixed choir open to all who wish to sing. Rehearsals on Sundays at 9.00 am.' ) . sd_p( '<a href="{{url:parish-life/choir}}">Choir →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'food-bank-team', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( 'Food Bank', 3 ) . sd_p( 'Free food every two weeks for families in need, run from the Cathedral House.' ) . sd_p( '<a href="{{url:parish-life/food-bank}}">Food Bank →</a>', 'parish-more' ) ),
 				)
 			),
 		),
 		'ru' => array(
 			'slug'    => 'glavnaya',
 			'title'   => 'Главная',
-			'content' => sd_columns(
+			'content' => sd_hero( 'ru' )
+			. sd_columns(
 				array(
 					array(
 						'64%',
 						sd_regular_services( 'ru', true, 'parish-mobile-only' )
-						. sd_title( 'Добро пожаловать' )
+						. sd_title( 'О соборе' )
 						. sd_p( 'Собор Рождества Пресвятой Богородицы и Святых Царственных Мучеников — кафедральный собор Епархии Великобритании и Западной Европы Русской Православной Церкви Заграницей (РПЦЗ). Приход, основанный в 1725 году, — один из старейших православных приходов на Британских островах. Сегодня богослужения совершаются в новом соборе в Чизике, на западе Лондона, построенном в псковском стиле и освящённом в 2018 году.' )
 						. sd_p( 'Божественная литургия, как правило, совершается четыре раза в неделю, вечерние богослужения — несколько раз в неделю. Службы идут на церковнославянском и английском языках. <a href="{{url:visit}}">Впервые в православном храме? Прочитайте наши советы для посетителей.</a>' )
 						. sd_title( 'Ближайшие богослужения' )
 						. sd_calendar( 'MONTH', 600 )
-						. sd_p( '<a href="{{url:services}}">Полное расписание богослужений →</a>', 'parish-more' )
+						. sd_p( '<a href="{{url:services}}">Полное расписание богослужений →</a><br><a href="{{url:services/readings}}">Чтения дня →</a>', 'parish-more' )
 						. sd_title( 'Последние новости' )
 						. sd_latest_news( 4 )
 						. sd_p( '<a href="{{url:news}}">Все новости →</a>', 'parish-more' ),
@@ -364,6 +514,7 @@ function sd_pages(): array {
 						. sd_card(
 							sd_h( 'Адрес собора' )
 							. sd_p( '57 Harvard Road<br>London W4 4ED' )
+							. sd_map( 'Карта: собор, 57 Harvard Road, London W4 4ED', 220, 'parish-card-map' )
 							. sd_p( '<a href="' . $maps_url . '">Открыть в Google Картах</a><br><a href="{{url:visit}}">Как добраться</a>', 'parish-more' )
 						)
 						. sd_card(
@@ -391,14 +542,17 @@ function sd_pages(): array {
 					),
 				)
 			)
+			. sd_title( 'Собор' )
+			. sd_gallery( array( 'interior-iconostasis', 'dome-fresco', 'exterior-dome', 'icon-flowers' ), 'ru', 4, 'parish-photo-strip' )
+			. sd_p( '<a href="{{url:parish-life/gallery}}">Больше фотографий →</a>', 'parish-more' )
 			. sd_title( 'Приходская жизнь' )
 			. sd_columns(
 				array(
-					sd_card( sd_h( 'Сестричество', 3 ) . sd_p( 'Посещение больных, помощь нуждающимся, выпечка просфор и забота о церковных облачениях.' ) . sd_p( '<a href="{{url:parish-life/sisterhood}}">Сестричество св. Ксении →</a>', 'parish-more' ) ),
-					sd_card( sd_h( 'Воскресная школа', 3 ) . sd_p( 'Занятия по основам веры для детей прихода в течение учебного года.' ) . sd_p( '<a href="{{url:parish-life/sunday-school}}">Воскресная школа →</a>', 'parish-more' ) ),
-					sd_card( sd_h( 'Молодёжная группа', 3 ) . sd_p( 'Вечерние беседы, паломничества, волонтёрство и киновечера для молодёжи 14–30 лет.' ) . sd_p( '<a href="{{url:parish-life/youth-group}}">Молодёжная группа →</a>', 'parish-more' ) ),
-					sd_card( sd_h( 'Хор', 3 ) . sd_p( 'Смешанный хор, открытый для всех желающих петь. Спевки по воскресеньям в 9:00.' ) . sd_p( '<a href="{{url:parish-life/choir}}">Хор →</a>', 'parish-more' ) ),
-					sd_card( sd_h( 'Продуктовый банк', 3 ) . sd_p( 'Раз в две недели — бесплатные продукты для нуждающихся семей в Приходском доме.' ) . sd_p( '<a href="{{url:parish-life/food-bank}}">Продуктовый банк →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'sisterhood', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( 'Сестричество', 3 ) . sd_p( 'Посещение больных, помощь нуждающимся, выпечка просфор и забота о церковных облачениях.' ) . sd_p( '<a href="{{url:parish-life/sisterhood}}">Сестричество св. Ксении →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'sunday-school', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( 'Воскресная школа', 3 ) . sd_p( 'Занятия по основам веры для детей прихода в течение учебного года.' ) . sd_p( '<a href="{{url:parish-life/sunday-school}}">Воскресная школа →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'youth-group', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( 'Молодёжная группа', 3 ) . sd_p( 'Вечерние беседы, паломничества, волонтёрство и киновечера для молодёжи 14–30 лет.' ) . sd_p( '<a href="{{url:parish-life/youth-group}}">Молодёжная группа →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'choir-music', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( 'Хор', 3 ) . sd_p( 'Смешанный хор, открытый для всех желающих петь. Спевки по воскресеньям в 9:00.' ) . sd_p( '<a href="{{url:parish-life/choir}}">Хор →</a>', 'parish-more' ) ),
+					sd_card( sd_photo( 'food-bank-team', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( 'Продуктовый банк', 3 ) . sd_p( 'Раз в две недели — бесплатные продукты для нуждающихся семей в Приходском доме.' ) . sd_p( '<a href="{{url:parish-life/food-bank}}">Продуктовый банк →</a>', 'parish-more' ) ),
 				)
 			),
 		),
@@ -463,6 +617,23 @@ function sd_pages(): array {
 						),
 					)
 				),
+		),
+	);
+
+	/* ---- Daily readings: filled in live by [parish_readings] (parish-core/includes/readings.php) ---- */
+	$pages['services/readings'] = array(
+		'parent' => 'services',
+		'en'     => array(
+			'slug'    => 'daily-readings',
+			'title'   => 'Daily Readings',
+			'content' => sd_p( 'The Epistle and Gospel appointed for each day, with the saints and feasts of the day, according to the Church calendar (Old Style) kept by the Cathedral.' )
+				. "<!-- wp:shortcode -->\n[parish_readings]\n<!-- /wp:shortcode -->\n\n",
+		),
+		'ru'     => array(
+			'slug'    => 'chteniya-dnya',
+			'title'   => 'Чтения дня',
+			'content' => sd_p( 'Апостольские и евангельские чтения на каждый день по церковному календарю (по старому стилю), которому следует собор.' )
+				. "<!-- wp:shortcode -->\n[parish_readings]\n<!-- /wp:shortcode -->\n\n",
 		),
 	);
 
@@ -570,16 +741,16 @@ function sd_pages(): array {
 			'content' => sd_p( 'The Cathedral is a living parish community. Alongside the Divine Services, parishioners serve one another and the wider community through the groups below. Everyone is welcome to take part: please speak to the group leader, or to one of the clergy.' )
 				. sd_columns(
 					array(
-						sd_card( sd_h( '<a href="{{url:parish-life/sisterhood}}">Sisterhood</a>', 3 ) . sd_p( 'The Sisterhood of St Xenia brings together the women of the Cathedral to support its life.' ) ),
-						sd_card( sd_h( '<a href="{{url:parish-life/youth-group}}">Youth Group</a>', 3 ) . sd_p( 'For young people aged 14–30: talks, pilgrimages, service projects and social evenings.' ) ),
-						sd_card( sd_h( '<a href="{{url:parish-life/sunday-school}}">Sunday School</a>', 3 ) . sd_p( 'Classes in the Faith for children of the parish during the school year.' ) ),
+						sd_card( sd_photo( 'sisterhood', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/sisterhood}}">Sisterhood</a>', 2, 'parish-subhead' ) . sd_p( 'The Sisterhood of St Xenia brings together the women of the Cathedral to support its life.' ) ),
+						sd_card( sd_photo( 'youth-group', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/youth-group}}">Youth Group</a>', 2, 'parish-subhead' ) . sd_p( 'For young people aged 14–30: talks, pilgrimages, service projects and social evenings.' ) ),
+						sd_card( sd_photo( 'sunday-school', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/sunday-school}}">Sunday School</a>', 2, 'parish-subhead' ) . sd_p( 'Classes in the Faith for children of the parish during the school year.' ) ),
 					)
 				)
 				. sd_columns(
 					array(
-						sd_card( sd_h( '<a href="{{url:parish-life/choir}}">Choir</a>', 3 ) . sd_p( 'All who wish to sing to the glory of God are welcome to join.' ) ),
-						sd_card( sd_h( '<a href="{{url:parish-life/food-bank}}">Food Bank</a>', 3 ) . sd_p( 'Free food for families in need, every two weeks.' ) ),
-						'',
+						sd_card( sd_photo( 'choir-music', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/choir}}">Choir</a>', 2, 'parish-subhead' ) . sd_p( 'All who wish to sing to the glory of God are welcome to join.' ) ),
+						sd_card( sd_photo( 'food-bank-team', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/food-bank}}">Food Bank</a>', 2, 'parish-subhead' ) . sd_p( 'Free food for families in need, every two weeks.' ) ),
+						sd_card( sd_photo( 'hierarchical-liturgy', 'en', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/gallery}}">Photo gallery</a>', 2, 'parish-subhead' ) . sd_p( 'Feasts, services and parish events in pictures.' ) ),
 					)
 				),
 		),
@@ -589,16 +760,16 @@ function sd_pages(): array {
 			'content' => sd_p( 'Собор — это живая приходская община. Помимо богослужений, прихожане служат друг другу и окружающим через приходские группы. Участвовать может каждый: обратитесь к руководителю группы или к одному из священников.' )
 				. sd_columns(
 					array(
-						sd_card( sd_h( '<a href="{{url:parish-life/sisterhood}}">Сестричество</a>', 3 ) . sd_p( 'Сестричество во имя св. блж. Ксении объединяет женщин прихода для служения собору.' ) ),
-						sd_card( sd_h( '<a href="{{url:parish-life/youth-group}}">Молодёжная группа</a>', 3 ) . sd_p( 'Для молодёжи 14–30 лет: беседы, паломничества, волонтёрство и встречи.' ) ),
-						sd_card( sd_h( '<a href="{{url:parish-life/sunday-school}}">Воскресная школа</a>', 3 ) . sd_p( 'Занятия по основам веры для детей прихода в течение учебного года.' ) ),
+						sd_card( sd_photo( 'sisterhood', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/sisterhood}}">Сестричество</a>', 2, 'parish-subhead' ) . sd_p( 'Сестричество во имя св. блж. Ксении объединяет женщин прихода для служения собору.' ) ),
+						sd_card( sd_photo( 'youth-group', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/youth-group}}">Молодёжная группа</a>', 2, 'parish-subhead' ) . sd_p( 'Для молодёжи 14–30 лет: беседы, паломничества, волонтёрство и встречи.' ) ),
+						sd_card( sd_photo( 'sunday-school', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/sunday-school}}">Воскресная школа</a>', 2, 'parish-subhead' ) . sd_p( 'Занятия по основам веры для детей прихода в течение учебного года.' ) ),
 					)
 				)
 				. sd_columns(
 					array(
-						sd_card( sd_h( '<a href="{{url:parish-life/choir}}">Хор</a>', 3 ) . sd_p( 'Приглашаем всех, кто желает петь во славу Божию.' ) ),
-						sd_card( sd_h( '<a href="{{url:parish-life/food-bank}}">Продуктовый банк</a>', 3 ) . sd_p( 'Бесплатные продукты для нуждающихся семей раз в две недели.' ) ),
-						'',
+						sd_card( sd_photo( 'choir-music', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/choir}}">Хор</a>', 2, 'parish-subhead' ) . sd_p( 'Приглашаем всех, кто желает петь во славу Божию.' ) ),
+						sd_card( sd_photo( 'food-bank-team', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/food-bank}}">Продуктовый банк</a>', 2, 'parish-subhead' ) . sd_p( 'Бесплатные продукты для нуждающихся семей раз в две недели.' ) ),
+						sd_card( sd_photo( 'hierarchical-liturgy', 'ru', 'parish-card__photo', 'medium_large' ) . sd_h( '<a href="{{url:parish-life/gallery}}">Фотогалерея</a>', 2, 'parish-subhead' ) . sd_p( 'Праздники, богослужения и приходская жизнь в фотографиях.' ) ),
 					)
 				),
 		),
@@ -607,8 +778,8 @@ function sd_pages(): array {
 	$group = function ( string $intro, string $what_h, array $what, string $when_h, string $when, string $contact_h, string $contact ): string {
 		return sd_columns(
 			array(
-				array( '64%', sd_p( $intro ) . sd_h( $what_h, 3 ) . sd_list( $what ) ),
-				array( '36%', sd_card( sd_h( $when_h, 3 ) . sd_p( $when ) ) . sd_card( sd_h( $contact_h, 3 ) . sd_p( $contact ) ) ),
+				array( '64%', sd_p( $intro ) . sd_h( $what_h, 2, 'parish-subhead' ) . sd_list( $what ) ),
+				array( '36%', sd_card( sd_h( $when_h, 2, 'parish-subhead' ) . sd_p( $when ) ) . sd_card( sd_h( $contact_h, 2, 'parish-subhead' ) . sd_p( $contact ) ) ),
 			)
 		);
 	};
@@ -765,21 +936,21 @@ function sd_pages(): array {
 
 	/*
 	 * ---- Photo gallery ----
-	 * A draft until photos are added: an editor opens it, drops photos into the
-	 * gallery block and presses Publish, and it then shows in the menu.
+	 * Starts with photos from the old parish pages. Editors add more by dropping
+	 * photos into the gallery block.
 	 */
-	$gallery = '<!-- wp:gallery {"linkTo":"none"} -->' . "\n" . '<figure class="wp-block-gallery has-nested-images columns-default is-cropped"></figure>' . "\n" . '<!-- /wp:gallery -->' . "\n\n";
+	$gallery_photos = array( 'sb-nave-iconostasis', 'sb-morning-light', 'sb-chandelier-vigil', 'sb-pascha-crowd', 'sb-procession', 'sb-clergy-feast', 'sb-bishop-blessing', 'sb-communion', 'sb-theophany-water', 'sb-feast-red', 'sb-icon-lampada', 'sb-icon-kiot', 'sb-shroud-flowers', 'sb-door-garland', 'sb-feast-congregation', 'sb-vigil-crowd', 'interior-iconostasis', 'dome-fresco', 'exterior-dome', 'exterior-side', 'icon-flowers', 'vigil-candles', 'hierarchical-liturgy', 'clergy-group', 'willow-blessing', 'holy-water-blessing', 'candle', 'parish-group', 'sisterhood', 'youth-group', 'food-bank-team' );
+	$gallery        = fn( string $lang ) => sd_gallery( $gallery_photos, $lang, 3, 'parish-photo-grid' );
 
 	$pages['parish-life/gallery'] = array(
 		'parent' => 'parish-life',
-		'status' => 'draft',
 		'en'     => array(
 			'slug'    => 'gallery',
 			'title'   => 'Photo gallery',
 			'content' => sd_p( 'Photographs from feasts, pilgrimages and parish events. Click a photo to see it larger.' )
-				. $gallery
+				. $gallery( 'en' )
 				. sd_card(
-					sd_h( 'About the photos', 3 )
+					sd_h( 'About the photos', 2, 'parish-subhead' )
 					. sd_p( 'Photography is not permitted during services, so these photos are taken before or after them, or at parish events. If you would like a photo of yourself or your child removed, please <a href="{{url:visit}}">let us know</a>.' )
 				),
 		),
@@ -787,9 +958,9 @@ function sd_pages(): array {
 			'slug'    => 'fotogalereya',
 			'title'   => 'Фотогалерея',
 			'content' => sd_p( 'Фотографии с праздников, паломничеств и приходских событий. Нажмите на фото, чтобы увеличить его.' )
-				. $gallery
+				. $gallery( 'ru' )
 				. sd_card(
-					sd_h( 'О фотографиях', 3 )
+					sd_h( 'О фотографиях', 2, 'parish-subhead' )
 					. sd_p( 'Фотосъёмка во время богослужений запрещена, поэтому снимки сделаны до или после служб либо на приходских мероприятиях. Если вы хотите, чтобы ваше фото или фото вашего ребёнка было удалено, пожалуйста, <a href="{{url:visit}}">сообщите нам</a>.' )
 				),
 		),
@@ -850,7 +1021,7 @@ function sd_pages(): array {
 	);
 
 	/* ---- Visit & contact ---- */
-	$map = fn( string $title ) => sd_html( '<div class="parish-embed"><iframe src="https://www.google.com/maps?q=Russian+Orthodox+Cathedral,+57+Harvard+Road,+London+W4+4ED&amp;output=embed" height="380" loading="lazy" title="' . $title . '"></iframe></div>' );
+	$map = fn( string $title ) => sd_map( $title );
 
 	$pages['visit'] = array(
 		'en' => array(
@@ -861,23 +1032,23 @@ function sd_pages(): array {
 					array(
 						'64%',
 						sd_p( 'Everyone is welcome at the Cathedral. We keep the traditional liturgical and pastoral practice of the Orthodox Church, including in dress and conduct in church. Because this may be unfamiliar, here is some short guidance.' )
-						. sd_h( 'Dress', 3 )
+						. sd_h( 'Dress', 2, 'parish-subhead' )
 						. sd_p( 'Please wear formal church clothes. Men wear long trousers and a shirt that covers the arms. Women wear a dress or long skirt and cover their heads. Headscarves can be borrowed at the kiosk. Open-toed shoes and sportswear are not appropriate.' )
-						. sd_h( 'In the church', 3 )
+						. sd_h( 'In the church', 2, 'parish-subhead' )
 						. sd_p( 'Men stand on the right and women on the left. A few seats at the back are kept for the frail and elderly. Only clergy and authorised staff may go onto the solea in front of the iconostasis.' )
-						. sd_h( 'Receiving the Holy Mysteries', 3 )
+						. sd_h( 'Receiving the Holy Mysteries', 2, 'parish-subhead' )
 						. sd_p( 'Holy Communion is for Orthodox Christians who have prepared for it, including Confession, normally the day before. All visitors are welcome to receive the blessed bread at the end of the Liturgy and to venerate the Cross.' )
-						. sd_h( 'Photography and phones', 3 )
+						. sd_h( 'Photography and phones', 2, 'parish-subhead' )
 						. sd_p( 'Photography during services is not permitted. Please switch your phone off or to silent before entering the church.' )
-						. sd_h( 'Getting here', 3 )
+						. sd_h( 'Getting here', 2, 'parish-subhead' )
 						. sd_p( 'The Cathedral is on Harvard Road in Chiswick, West London. Rail and Underground stations are within walking distance, and several bus routes stop nearby.' )
 						. $map( 'Map showing the Cathedral, 57 Harvard Road, London W4 4ED' ),
 					),
 					array(
 						'36%',
-						sd_card( sd_h( 'Address', 3 ) . sd_p( 'Cathedral of the Nativity of the Mother of God<br>57 Harvard Road<br>London W4 4ED' ) . sd_p( '<a href="' . $maps_url . '">Open in Google Maps</a>' ) )
-						. sd_card( sd_h( 'Contact', 3 ) . sd_p( 'For baptisms, weddings and other services, please contact Archpriest Vitaly Serapinas on ' . sd_tel( '+44 7935 700 721' ) . '. <a href="{{url:sacraments}}">More about the Sacraments</a>' ) . sd_p( 'For general enquiries or use of the Parish House, please contact the Churchwarden.' ) . sd_p( '<a href="{{url:clergy}}">All clergy contacts</a>' ) )
-						. sd_card( sd_h( 'Opening times', 3 ) . sd_p( 'The Cathedral is open during all services on the <a href="{{url:services}}">schedule</a>, and at other times by appointment.' ) ),
+						sd_card( sd_h( 'Address', 2, 'parish-subhead' ) . sd_p( 'Cathedral of the Nativity of the Mother of God<br>57 Harvard Road<br>London W4 4ED' ) . sd_p( '<a href="' . $maps_url . '">Open in Google Maps</a>' ) )
+						. sd_card( sd_h( 'Contact', 2, 'parish-subhead' ) . sd_p( 'For baptisms, weddings and other services, please contact Archpriest Vitaly Serapinas on ' . sd_tel( '+44 7935 700 721' ) . '. <a href="{{url:sacraments}}">More about the Sacraments</a>' ) . sd_p( 'For general enquiries or use of the Parish House, please contact the Churchwarden.' ) . sd_p( '<a href="{{url:clergy}}">All clergy contacts</a>' ) )
+						. sd_card( sd_h( 'Opening times', 2, 'parish-subhead' ) . sd_p( 'The Cathedral is open during all services on the <a href="{{url:services}}">schedule</a>, and at other times by appointment.' ) ),
 					),
 				)
 			),
@@ -890,23 +1061,23 @@ function sd_pages(): array {
 					array(
 						'64%',
 						sd_p( 'Мы рады всем, кто приходит в собор. Мы сохраняем традиционную богослужебную и пастырскую практику Православной Церкви, в том числе в одежде и поведении в храме. Ниже — краткие советы для тех, кому это непривычно.' )
-						. sd_h( 'Одежда', 3 )
+						. sd_h( 'Одежда', 2, 'parish-subhead' )
 						. sd_p( 'Просим приходить в подобающей для храма одежде. Мужчинам — в длинных брюках и рубашке с рукавами. Женщинам — в платье или длинной юбке и с покрытой головой. Платок можно взять в церковной лавке. Открытая обувь и спортивная одежда неуместны.' )
-						. sd_h( 'В храме', 3 )
+						. sd_h( 'В храме', 2, 'parish-subhead' )
 						. sd_p( 'Мужчины стоят справа, женщины — слева. Несколько мест в конце храма предназначены для немощных и пожилых. На солею перед иконостасом могут подниматься только священнослужители и уполномоченные сотрудники.' )
-						. sd_h( 'Участие в Таинствах', 3 )
+						. sd_h( 'Участие в Таинствах', 2, 'parish-subhead' )
 						. sd_p( 'К Святому Причастию приступают православные христиане, подготовившиеся к нему, в том числе исповедью, обычно накануне. Все гости могут получить благословлённый хлеб в конце литургии и приложиться ко Кресту.' )
-						. sd_h( 'Фотосъёмка и телефоны', 3 )
+						. sd_h( 'Фотосъёмка и телефоны', 2, 'parish-subhead' )
 						. sd_p( 'Фото- и видеосъёмка во время богослужений запрещена. Пожалуйста, выключите телефон или переведите его в беззвучный режим до входа в храм.' )
-						. sd_h( 'Как добраться', 3 )
+						. sd_h( 'Как добраться', 2, 'parish-subhead' )
 						. sd_p( 'Собор находится на Harvard Road в Чизике, на западе Лондона. В пешей доступности — железнодорожные станции и станции метро, рядом останавливаются несколько автобусных маршрутов.' )
 						. $map( 'Карта: собор, 57 Harvard Road, London W4 4ED' ),
 					),
 					array(
 						'36%',
-						sd_card( sd_h( 'Адрес', 3 ) . sd_p( 'Собор Рождества Пресвятой Богородицы<br>57 Harvard Road<br>London W4 4ED' ) . sd_p( '<a href="' . $maps_url . '">Открыть в Google Картах</a>' ) )
-						. sd_card( sd_h( 'Контакты', 3 ) . sd_p( 'По вопросам крещения, венчания и других треб обращайтесь к протоиерею Виталию Серапинасу: ' . sd_tel( '+44 7935 700 721' ) . '. <a href="{{url:sacraments}}">Подробнее о таинствах и требах</a>' ) . sd_p( 'По общим вопросам и использованию Приходского дома обращайтесь к старосте.' ) . sd_p( '<a href="{{url:clergy}}">Все контакты духовенства</a>' ) )
-						. sd_card( sd_h( 'Часы работы', 3 ) . sd_p( 'Собор открыт во время всех богослужений по <a href="{{url:services}}">расписанию</a>, а в другое время — по договорённости.' ) ),
+						sd_card( sd_h( 'Адрес', 2, 'parish-subhead' ) . sd_p( 'Собор Рождества Пресвятой Богородицы<br>57 Harvard Road<br>London W4 4ED' ) . sd_p( '<a href="' . $maps_url . '">Открыть в Google Картах</a>' ) )
+						. sd_card( sd_h( 'Контакты', 2, 'parish-subhead' ) . sd_p( 'По вопросам крещения, венчания и других треб обращайтесь к протоиерею Виталию Серапинасу: ' . sd_tel( '+44 7935 700 721' ) . '. <a href="{{url:sacraments}}">Подробнее о таинствах и требах</a>' ) . sd_p( 'По общим вопросам и использованию Приходского дома обращайтесь к старосте.' ) . sd_p( '<a href="{{url:clergy}}">Все контакты духовенства</a>' ) )
+						. sd_card( sd_h( 'Часы работы', 2, 'parish-subhead' ) . sd_p( 'Собор открыт во время всех богослужений по <a href="{{url:services}}">расписанию</a>, а в другое время — по договорённости.' ) ),
 					),
 				)
 			),
@@ -926,12 +1097,12 @@ function sd_pages(): array {
 				. sd_columns(
 					array(
 						sd_card(
-							sd_h( 'Give online', 3 )
+							sd_h( 'Give online', 2, 'parish-subhead' )
 							. sd_p( 'Donate securely by card, Apple Pay or Google Pay, once or monthly. If you are a UK taxpayer, tick the Gift Aid box and we can claim an extra 25p for every £1 you give, at no cost to you.' )
 							. sd_html( '<div class="parish-donation-form" style="padding:1rem;border:1px dashed var(--wp--preset--color--border);border-radius:4px;color:var(--wp--preset--color--muted)">[ Online donation form with Gift Aid will appear here. See docs/PROPOSAL.md, "Donations and Gift Aid". ]</div>' )
 						),
 						sd_card(
-							sd_h( 'Gift Aid: add 25% at no cost', 3 )
+							sd_h( 'Gift Aid: add 25% at no cost', 2, 'parish-subhead' )
 							. sd_p( 'If you pay UK Income Tax or Capital Gains Tax, a Gift Aid declaration lets the Cathedral reclaim the basic-rate tax on your gifts from HMRC. £10 becomes £12.50.' )
 							. sd_p( 'You only need to declare once. The declaration covers past (up to 4 years) and future gifts to the Cathedral. You can make it online when you donate, or on a paper form from the kiosk.' )
 							. sd_p( '<em>Please tell us if you stop paying enough UK tax, or change your name or address.</em>' )
@@ -940,9 +1111,9 @@ function sd_pages(): array {
 				)
 				. sd_columns(
 					array(
-						sd_card( sd_h( 'Bank transfer or standing order', 3 ) . sd_p( $bank ) . sd_p( 'Transfers are welcome from any account, including abroad.' ) ),
-						sd_card( sd_h( 'By cheque', 3 ) . sd_p( 'Please make cheques payable to <strong>London Russian Orthodox Church</strong> and hand them in at the kiosk, or post them to 57 Harvard Road, London W4 4ED.' ) ),
-						sd_card( sd_h( 'Support the Sunday School', 3 ) . sd_p( 'Sort code: 40-11-60<br>Account number: 40495042<br>Reference: Donation' ) ),
+						sd_card( sd_h( 'Bank transfer or standing order', 2, 'parish-subhead' ) . sd_p( $bank ) . sd_p( 'Transfers are welcome from any account, including abroad.' ) ),
+						sd_card( sd_h( 'By cheque', 2, 'parish-subhead' ) . sd_p( 'Please make cheques payable to <strong>London Russian Orthodox Church</strong> and hand them in at the kiosk, or post them to 57 Harvard Road, London W4 4ED.' ) ),
+						sd_card( sd_h( 'Support the Sunday School', 2, 'parish-subhead' ) . sd_p( 'Sort code: 40-11-60<br>Account number: 40495042<br>Reference: Donation' ) ),
 					)
 				),
 		),
@@ -954,12 +1125,12 @@ function sd_pages(): array {
 				. sd_columns(
 					array(
 						sd_card(
-							sd_h( 'Пожертвовать онлайн', 3 )
+							sd_h( 'Пожертвовать онлайн', 2, 'parish-subhead' )
 							. sd_p( 'Безопасное пожертвование картой, Apple Pay или Google Pay, разово или ежемесячно. Если вы платите налоги в Великобритании, отметьте Gift Aid, и мы сможем получить дополнительно 25 пенсов с каждого фунта без каких-либо затрат с вашей стороны.' )
 							. sd_html( '<div class="parish-donation-form" style="padding:1rem;border:1px dashed var(--wp--preset--color--border);border-radius:4px;color:var(--wp--preset--color--muted)">[ Здесь будет форма онлайн-пожертвования с Gift Aid. ]</div>' )
 						),
 						sd_card(
-							sd_h( 'Gift Aid: +25% без дополнительных затрат', 3 )
+							sd_h( 'Gift Aid: +25% без дополнительных затрат', 2, 'parish-subhead' )
 							. sd_p( 'Если вы платите подоходный налог или налог на прирост капитала в Великобритании, декларация Gift Aid позволяет собору вернуть от HMRC налог по базовой ставке с ваших пожертвований: £10 превращаются в £12,50.' )
 							. sd_p( 'Декларацию достаточно подписать один раз. Она распространяется на прошлые (до 4 лет) и будущие пожертвования собору. Её можно оформить онлайн при пожертвовании или на бумажном бланке в церковной лавке.' )
 							. sd_p( '<em>Пожалуйста, сообщите нам, если вы перестанете платить достаточно налогов в Великобритании или смените имя или адрес.</em>' )
@@ -968,9 +1139,9 @@ function sd_pages(): array {
 				)
 				. sd_columns(
 					array(
-						sd_card( sd_h( 'Банковский перевод или standing order', 3 ) . sd_p( $bank_ru ) . sd_p( 'Переводы принимаются с любых счетов, в том числе из-за рубежа.' ) ),
-						sd_card( sd_h( 'Чеком', 3 ) . sd_p( 'Чеки выписываются на имя <strong>London Russian Orthodox Church</strong>. Их можно передать в церковную лавку или отправить по почте: 57 Harvard Road, London W4 4ED.' ) ),
-						sd_card( sd_h( 'Поддержать воскресную школу', 3 ) . sd_p( 'Sort code: 40-11-60<br>Номер счёта: 40495042<br>Назначение: Donation' ) ),
+						sd_card( sd_h( 'Банковский перевод или standing order', 2, 'parish-subhead' ) . sd_p( $bank_ru ) . sd_p( 'Переводы принимаются с любых счетов, в том числе из-за рубежа.' ) ),
+						sd_card( sd_h( 'Чеком', 2, 'parish-subhead' ) . sd_p( 'Чеки выписываются на имя <strong>London Russian Orthodox Church</strong>. Их можно передать в церковную лавку или отправить по почте: 57 Harvard Road, London W4 4ED.' ) ),
+						sd_card( sd_h( 'Поддержать воскресную школу', 2, 'parish-subhead' ) . sd_p( 'Sort code: 40-11-60<br>Номер счёта: 40495042<br>Назначение: Donation' ) ),
 					)
 				),
 		),
@@ -1038,7 +1209,8 @@ function sd_news(): void {
 			'ru'   => array( 'Просим продлить приходское членство до 4 июня', sd_p( 'Годовое приходское собрание состоится 7 июня. Чтобы голосовать на собрании, просим продлить приходское членство до 4 июня. Бланки можно взять в церковной лавке.' ) ),
 		),
 		array(
-			'date' => '2026-03-01 12:00:00',
+			'date'  => '2026-03-01 12:00:00',
+			'photo' => 'book-cover',
 			'en'   => array( 'New book on the architecture and iconography of the Cathedral', sd_p( 'The Cathedral is pleased to announce a new illustrated book on the Cathedral: its architecture, iconostasis and frescoes, with essays on its history and on Christianity in the British Isles.' ) . sd_p( 'The book is on sale at the Cathedral kiosk (hardback, 96 pages, £20, or £15 each for five or more). Copies can also be ordered by post.' ) ),
 			'ru'   => array( 'Вышла новая книга об архитектуре и иконографии собора', sd_p( 'Собор рад сообщить о выходе иллюстрированной книги о соборе: его архитектуре, иконостасе и росписях, с очерками о его истории и о христианстве на Британских островах.' ) . sd_p( 'Книгу можно приобрести в церковной лавке (твёрдый переплёт, 96 страниц, £20, при покупке от пяти экземпляров — £15 за экземпляр). Также возможен заказ по почте.' ) ),
 		),
@@ -1072,6 +1244,9 @@ function sd_news(): void {
 				)
 			);
 			pll_set_post_language( $id, $lang );
+			if ( isset( $item['photo'] ) ) {
+				set_post_thumbnail( $id, sd_photo_id( $item['photo'], $lang ) );
+			}
 			$ids[ $lang ] = $id;
 		}
 		pll_save_post_translations( $ids );
@@ -1092,7 +1267,10 @@ function sd_news(): void {
 
 function sd_menus( array $ids ): void {
 	$structure = array( 'home', 'services', 'sacraments', 'news', 'parish-life', 'clergy', 'visit', 'donate' );
-	$children  = array( 'parish-life/sisterhood', 'parish-life/youth-group', 'parish-life/sunday-school', 'parish-life/choir', 'parish-life/food-bank', 'parish-life/gallery' );
+	$children  = array(
+		'services'    => array( 'services/readings' ),
+		'parish-life' => array( 'parish-life/sisterhood', 'parish-life/youth-group', 'parish-life/sunday-school', 'parish-life/choir', 'parish-life/food-bank', 'parish-life/gallery' ),
+	);
 	$labels    = array(
 		'en' => array( 'home' => 'Home', 'donate' => 'Donate', 'services' => 'Services', 'visit' => 'Visit & Contact' ),
 		'ru' => array( 'home' => 'Главная', 'donate' => 'Пожертвования', 'services' => 'Богослужения', 'sacraments' => 'Таинства', 'visit' => 'Контакты' ),
@@ -1123,8 +1301,8 @@ function sd_menus( array $ids ): void {
 					'menu-item-status'    => 'publish',
 				)
 			);
-			if ( 'parish-life' === $key ) {
-				foreach ( $children as $child ) {
+			if ( isset( $children[ $key ] ) ) {
+				foreach ( $children[ $key ] as $child ) {
 					if ( empty( $ids[ $child ][ $lang ] ) ) {
 						continue;
 					}
@@ -1187,6 +1365,28 @@ function sd_demo_leader( array $ids ): void {
 	}
 }
 
+/**
+ * Demo news editor (the news volunteer). She writes in Russian first, so the
+ * admin's language filter is set to Russian: Polylang then starts new posts in Russian.
+ */
+function sd_demo_editor(): void {
+	if ( username_exists( 'newseditor' ) ) {
+		return;
+	}
+	$user_id = wp_insert_user(
+		array(
+			'user_login'   => 'newseditor',
+			'user_pass'    => 'newseditor',
+			'user_email'   => 'newseditor@example.org',
+			'display_name' => 'News editor (demo)',
+			'role'         => 'editor',
+		)
+	);
+	if ( ! is_wp_error( $user_id ) ) {
+		update_user_meta( $user_id, 'pll_filter_content', 'ru' );
+	}
+}
+
 /* -------------------------------------------------------------------------
  * Run.
  * ---------------------------------------------------------------------- */
@@ -1219,6 +1419,28 @@ foreach ( $sd_defs as $key => $def ) {
 	pll_save_post_translations( array_filter( $sd_ids[ $key ] ) );
 }
 
+// Banner photo under each page title (the page's featured image).
+$sd_banners = array(
+	'services'                  => 'sb-morning-light',
+	'sacraments'                => 'sb-communion',
+	'parish-life'               => 'parish-group',
+	'parish-life/sisterhood'    => 'icon-flowers',
+	'parish-life/youth-group'   => 'youth-group',
+	'parish-life/sunday-school' => 'sunday-school',
+	'parish-life/choir'         => 'choir-music',
+	'parish-life/food-bank'     => 'food-bank-team',
+	'clergy'                    => 'sb-clergy-feast',
+	'visit'                     => 'sb-door-garland',
+	'donate'                    => 'sb-pascha-crowd',
+);
+foreach ( $sd_banners as $key => $photo ) {
+	foreach ( $sd_ids[ $key ] ?? array() as $lang => $id ) {
+		if ( $id && ! has_post_thumbnail( $id ) ) {
+			set_post_thumbnail( $id, sd_photo_id( $photo, $lang ) );
+		}
+	}
+}
+
 // Resolve {{url:key}} placeholders now that every page has a permalink.
 foreach ( $sd_ids as $key => $by_lang ) {
 	foreach ( $by_lang as $lang => $id ) {
@@ -1245,7 +1467,10 @@ update_option( 'page_for_posts', $sd_ids['news']['en'] );
 
 sd_news();
 sd_menus( $sd_ids );
-sd_demo_leader( $sd_ids );
+if ( ! defined( 'PARISH_SEED_SKIP_DEMO_USERS' ) ) { // Demo logins have weak passwords: local only.
+	sd_demo_leader( $sd_ids );
+	sd_demo_editor();
+}
 
 update_option( 'parish_flush_rewrite', 1 ); // Flushed by Parish Core on the next page load.
 echo "Parish site seeded.\n";

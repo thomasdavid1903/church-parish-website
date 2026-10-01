@@ -38,6 +38,7 @@ This opens a throwaway WordPress at http://127.0.0.1:9400 with Polylang installe
 
 - Admin: http://127.0.0.1:9400/wp-admin/ (Playground logs you in automatically)
 - Demo group leader: user `headsister`, password `headsister` (can edit only the Sisterhood page, EN and RU)
+- Demo news editor: user `newseditor`, password `newseditor` (Editor role; new posts start in Russian)
 
 > `.npmrc` sets `ignore-scripts=true` because an optional native dependency of the Playground CLI (`fs-ext`) can fail to build (it does on Windows). It isn't needed.
 

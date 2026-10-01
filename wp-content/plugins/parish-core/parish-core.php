@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Parish Core
- * Description: Parish-specific features: group leader accounts restricted to their own pages, a Google Calendar "Service schedule" block, and parish settings.
+ * Description: Parish-specific features: group leader accounts restricted to their own pages, a Google Calendar "Service schedule" block, daily Scripture readings, and parish settings.
  * Version: 0.1.0
  * Requires at least: 6.6
  * Requires PHP: 8.0
@@ -19,7 +19,10 @@ define( 'PARISH_CORE_DIR', __DIR__ );
 require_once __DIR__ . '/includes/group-leaders.php';
 require_once __DIR__ . '/includes/settings.php';
 require_once __DIR__ . '/includes/calendar.php';
+require_once __DIR__ . '/includes/readings.php';
+require_once __DIR__ . '/includes/editor-language.php';
 require_once __DIR__ . '/includes/transliterate.php';
+require_once __DIR__ . '/includes/photo-credit.php';
 
 register_activation_hook( __FILE__, 'parish_core_add_roles' );
 

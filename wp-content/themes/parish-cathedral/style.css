@@ -263,6 +263,7 @@ a[href^="tel:"] { padding: 0.65rem 0; white-space: nowrap; }
 .parish-news-item {
 	padding-bottom: 1.25rem;
 	border-bottom: 1px solid var(--wp--preset--color--border);
+	text-align: left;
 }
 .parish-news-item .wp-block-post-title { margin: 0.2rem 0 0.4rem; }
 .parish-news-item .wp-block-post-excerpt { margin: 0; }
@@ -301,6 +302,93 @@ a[href^="tel:"] { padding: 0.65rem 0; white-space: nowrap; }
 	.parish-person > :not(.parish-person__photo) { grid-column: 2; }
 }
 
+/* ---------- Photos ---------- */
+
+/* Home page banner: photo with the welcome text over it. */
+.parish-hero {
+	margin-bottom: var(--wp--preset--spacing--50);
+	padding: var(--wp--preset--spacing--50) clamp(1.25rem, 5vw, 3.5rem);
+	border-radius: 4px;
+	overflow: hidden;
+	color: var(--wp--preset--color--white);
+}
+.parish-hero .wp-block-cover__inner-container > * { max-width: 640px; margin-left: 0 !important; }
+.parish-hero h1 {
+	margin: 0.25rem 0 0.75rem;
+	font-size: var(--wp--preset--font-size--xx-large);
+	line-height: 1.15;
+	color: inherit;
+}
+.parish-hero__eyebrow {
+	margin: 0;
+	color: #e9d9b0;
+	font-size: var(--wp--preset--font-size--small);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+.parish-hero__lead { margin: 0 0 1.5rem; font-size: var(--wp--preset--font-size--large); }
+.parish-hero .is-style-outline .wp-block-button__link {
+	background: transparent;
+	color: var(--wp--preset--color--white);
+	border: 2px solid currentColor;
+}
+.parish-hero .is-style-outline .wp-block-button__link:hover { background: rgba(255, 255, 255, 0.12); }
+/* Phones: keep the hero short so the service times start on the first screen. */
+@media (max-width: 781px) {
+	.parish-hero {
+		min-height: 0 !important;
+		padding-top: 1.5rem;
+		padding-bottom: 1.5rem;
+		margin-bottom: 1.25rem;
+	}
+	.parish-hero h1 { font-size: var(--wp--preset--font-size--x-large); margin-bottom: 0.5rem; }
+	.parish-hero__lead { font-size: var(--wp--preset--font-size--medium); margin-bottom: 1rem; }
+	.parish-hero .wp-block-button__link { padding: 0.6rem 1rem; }
+	.parish-hero .wp-block-buttons { gap: 0.6rem; }
+	.home main.wp-block-group { padding-top: 1rem !important; }
+}
+
+/* Page banner (the page's featured image) between the title and the content. */
+.parish-banner { margin: var(--wp--preset--spacing--30) 0 var(--wp--preset--spacing--50); }
+.parish-banner img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 3 / 1;
+	object-fit: cover;
+	max-height: 240px; /* On a laptop the page text still starts on the first screen. */
+	object-fit: cover;
+	object-position: center 35%;
+	border-radius: 4px;
+}
+@media (max-width: 781px) {
+	.parish-banner img { aspect-ratio: 5 / 2; }
+}
+
+/* Section headings that are H2 for screen readers but sized like card headings. */
+.parish-subhead { font-size: var(--wp--preset--font-size--large); }
+
+/* News post photo: shown whole (e.g. a book cover), not stretched to the column. */
+.parish-post-image img { width: auto; max-width: 100%; max-height: 520px; margin-inline: auto; }
+
+/* Photo at the top of a card, edge to edge. */
+.is-style-parish-card:has(> .parish-card__photo:first-child) { padding-top: 0; overflow: hidden; }
+.is-style-parish-card > .parish-card__photo:first-child { margin: 0 -1.4rem 1rem; }
+.parish-card__photo img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+}
+
+/* Row of photos on the home page. */
+.parish-photo-strip.wp-block-gallery { gap: 0.5rem; margin-bottom: 0.25rem; }
+.parish-photo-strip.wp-block-gallery img,
+.parish-photo-grid.wp-block-gallery img { aspect-ratio: 1; border-radius: 4px; }
+@media (max-width: 600px) {
+	.parish-photo-strip.wp-block-gallery.has-nested-images figure.wp-block-image:not(#individual-image) { width: calc(50% - 0.25rem); }
+}
+
 /* Search results: dates only make sense for news, not pages. */
 .search .type-page .wp-block-post-date { display: none; }
 
@@ -317,6 +405,10 @@ a[href^="tel:"] { padding: 0.65rem 0; white-space: nowrap; }
 	font-size: var(--wp--preset--font-size--small);
 }
 .parish-post-nav__next { text-align: right; margin-left: auto; }
+
+/* Small map inside the home page "Cathedral address" card. */
+.parish-card-map { margin: 0.75rem 0 0.25rem; }
+.parish-card-map iframe { border-radius: 4px; }
 
 /* Embeds: Google Calendar & Maps */
 .parish-embed iframe {
@@ -384,3 +476,98 @@ a[href^="tel:"] { padding: 0.65rem 0; white-space: nowrap; }
 	border-top: 1px solid rgba(255, 255, 255, 0.12);
 	color: #b7ada1;
 }
+
+/* ---------- Daily readings ([parish_readings]) ---------- */
+
+.parish-readings__day {
+	padding: 1.25rem 1.4rem;
+	background: var(--wp--preset--color--surface);
+	border-left: 3px solid var(--wp--preset--color--accent);
+	border-radius: 4px;
+}
+.parish-readings__day p { margin: 0.15rem 0; }
+.parish-readings__date {
+	font-family: var(--wp--preset--font-family--serif);
+	font-size: var(--wp--preset--font-size--x-large);
+	line-height: 1.2;
+}
+.parish-readings__old-style,
+.parish-readings__hint,
+.parish-readings__source,
+.parish-readings__note { color: var(--wp--preset--color--muted); }
+.parish-readings__feast {
+	margin-top: 0.6rem !important;
+	color: var(--wp--preset--color--primary);
+	font-family: var(--wp--preset--font-family--serif);
+	font-size: var(--wp--preset--font-size--large);
+	line-height: 1.25;
+}
+.parish-readings__week { margin-top: 0.6rem !important; font-weight: 700; }
+.parish-readings__fast.is-fast { color: var(--wp--preset--color--primary); }
+
+.parish-readings__list { list-style: none; padding: 0; margin: 0; }
+.parish-readings__list li {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0 1rem;
+	border-bottom: 1px dotted var(--wp--preset--color--border);
+}
+.parish-readings__ref {
+	display: inline-block;
+	padding: 0.65rem 0;
+	font-family: var(--wp--preset--font-family--serif);
+	font-size: var(--wp--preset--font-size--large);
+}
+.parish-readings__note,
+.parish-readings__hint,
+.parish-readings__source { font-size: var(--wp--preset--font-size--small); }
+
+.parish-readings__troparia {
+	margin-top: var(--wp--preset--spacing--40);
+	border-top: 1px solid var(--wp--preset--color--border);
+	border-bottom: 1px solid var(--wp--preset--color--border);
+}
+.parish-readings__troparia summary {
+	padding: 0.8rem 0;
+	cursor: pointer;
+	font-weight: 700;
+}
+.parish-readings__troparia hr { border: 0; border-top: 1px solid var(--wp--preset--color--border); }
+
+.parish-readings__nav {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 0.5rem 2rem;
+	margin-top: var(--wp--preset--spacing--50);
+}
+.parish-readings__nav a { display: inline-block; padding: 0.65rem 0; }
+
+/* Photo credit in the corner of a photo (Media Library → "Photo credit").
+   A soft fade rather than a box, so it reads as a signature, not a label. */
+.has-photo-credit { position: relative; }
+.parish-photo-credit {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	z-index: 2;
+	max-width: 100%;
+	padding: 1.1rem 0.7rem 0.35rem 2.5rem;
+	background: radial-gradient(ellipse at 100% 100%, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 45%, rgba(0, 0, 0, 0) 75%);
+	color: rgba(255, 255, 255, 0.92);
+	font-family: var(--wp--preset--font-family--heading, Georgia, serif);
+	font-size: 0.72rem;
+	font-style: italic;
+	letter-spacing: 0.02em;
+	line-height: 1.3;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+	pointer-events: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.wp-block-image.has-photo-credit .parish-photo-credit { border-bottom-right-radius: inherit; }
+/* Large banners: a little bigger and inset from the edge */
+.parish-hero .parish-photo-credit,
+.parish-banner .parish-photo-credit { font-size: 0.8rem; padding-right: 1rem; padding-bottom: 0.5rem; }

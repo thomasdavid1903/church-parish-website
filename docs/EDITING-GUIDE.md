@@ -60,8 +60,10 @@ News items are **Posts** in WordPress. You never edit the News page itself: ever
    - Press **Enter** for a new paragraph.
    - To add a photo, a heading or a list, click the **+** button and choose **Image**, **Heading** or **List**.
    - To add a link, select some words and click the 🔗 link button.
-3. In the right-hand sidebar, check that **Language** says **English**.
-4. Click **Publish** (top right), then **Publish** again to confirm.
+3. In the right-hand sidebar, check that **Language** says **English**. The **Languages** box is the last one in the sidebar: scroll down to see it.
+4. Click **Publish** (top right). The confirmation panel shows **Language: English** at the bottom. Click **Publish** again to confirm.
+
+> If you write in Russian first, the editor starts new posts in whichever language is selected in the language filter at the top of the admin (the news editor's account is set to **Русский**). If a Russian title is set to English, a yellow warning appears with a **Switch to Русский** button. Click it, then **OK** when asked to confirm.
 
 The post is now live on the News page and the home page.
 
@@ -139,6 +141,10 @@ A calendar can be added to any page. In the page editor, click **+** and search 
 - **View:** a list of upcoming services, a week or a month;
 - **Height (px):** how tall the calendar is;
 - **Different calendar ID (optional):** e.g. to show a separate calendar for one group. Leave it empty to use the parish calendar.
+
+### Daily readings
+
+The **Daily Readings** page (under Services) fills itself in every day. It shows the Epistle and Gospel, the saints of the day and the troparia, following the Old Style calendar. The content comes from the [Holy Trinity Orthodox Church calendar](https://www.holytrinityorthodox.com/calendar/), so there is nothing to update. You can edit the introduction above it like any other page. The Russian page shows the readings in Russian and links to «Азбука веры» for the full texts. If the calendar website is down, the page says "The readings could not be loaded just now" and tries again after 15 minutes.
 
 ---
 

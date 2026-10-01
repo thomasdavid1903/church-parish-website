@@ -62,6 +62,34 @@ add_action(
 );
 
 /**
+ * Share image for pages without a photo of their own: the photo in the home
+ * page banner (its Cover block), so changing that photo changes this too.
+ */
+function parish_default_share_image(): string {
+	$front = (int) get_option( 'page_on_front' );
+	if ( ! $front ) {
+		return '';
+	}
+	$cached = get_transient( 'parish_share_image' );
+	if ( false !== $cached ) {
+		return $cached;
+	}
+	$image = '';
+	foreach ( parse_blocks( (string) get_post_field( 'post_content', $front ) ) as $block ) {
+		if ( 'core/cover' === $block['blockName'] && ! empty( $block['attrs']['id'] ) ) {
+			$image = (string) wp_get_attachment_image_url( $block['attrs']['id'], 'large' );
+			break;
+		}
+	}
+	set_transient( 'parish_share_image', $image, DAY_IN_SECONDS );
+	return $image;
+}
+add_action( 'save_post_page', fn() => delete_transient( 'parish_share_image' ) );
+
+// Same dash in browser tab titles in both languages (the Russian translation uses an em dash).
+add_filter( 'document_title_separator', fn() => '–' );
+
+/**
  * Description and Open Graph tags, so links shared on WhatsApp or Facebook
  * show a proper title, summary and (for news with a photo) an image.
  * Skipped if an SEO plugin is installed, as it does this itself.
@@ -85,6 +113,9 @@ add_action(
 				$desc = wp_trim_words( wp_strip_all_tags( get_the_excerpt( $post ) ), 30 );
 			}
 			$image = (string) get_the_post_thumbnail_url( $post, 'large' );
+		}
+		if ( ! $image ) {
+			$image = parish_default_share_image();
 		}
 		$tags = array(
 			'og:type'        => is_singular( 'post' ) ? 'article' : 'website',
