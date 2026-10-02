@@ -445,3 +445,19 @@ add_filter(
 function parish_readings_compact( string $html ): string {
 	return trim( preg_replace( '/\s*\n\s*/', ' ', $html ) );
 }
+
+/**
+ * Readings for other days (?on=YYYY-MM-DD) link to the day before and after
+ * without end. Keep search engines to today's page so they don't crawl
+ * thousands of near-identical pages.
+ */
+add_filter(
+	'wp_robots',
+	function ( array $robots ): array {
+		if ( ! empty( $_GET['on'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$robots['noindex'] = true;
+			$robots['follow']  = true;
+		}
+		return $robots;
+	}
+);

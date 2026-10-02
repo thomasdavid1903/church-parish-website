@@ -48,12 +48,23 @@ function parish_page_url( string $en_slug ): string {
 }
 
 /**
- * [parish_heading en="News" ru="Новости"] — a language-aware H1 for templates.
+ * [parish_heading en="News" ru="Новости"] — a language-aware H1 for templates, hidden on screen (the menu already shows where you are) but kept for screen readers.
  */
 add_shortcode(
 	'parish_heading',
 	function ( $atts ) {
 		$atts = shortcode_atts( array( 'en' => '', 'ru' => '' ), $atts );
-		return '<h1 class="wp-block-heading">' . esc_html( parish_t( $atts['en'], $atts['ru'] ?: $atts['en'] ) ) . '</h1>';
+		return '<h1 class="wp-block-heading screen-reader-text">' . esc_html( parish_t( $atts['en'], $atts['ru'] ?: $atts['en'] ) ) . '</h1>';
+	}
+);
+
+/**
+ * [parish_text en="…" ru="…"] — a line of text in the page's language, for templates.
+ */
+add_shortcode(
+	'parish_text',
+	function ( $atts ) {
+		$atts = shortcode_atts( array( 'en' => '', 'ru' => '' ), $atts );
+		return '<p>' . esc_html( parish_t( $atts['en'], $atts['ru'] ?: $atts['en'] ) ) . '</p>';
 	}
 );

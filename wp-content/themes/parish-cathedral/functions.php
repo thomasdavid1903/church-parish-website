@@ -37,12 +37,13 @@ add_action(
 add_action(
 	'wp_enqueue_scripts',
 	function () {
-		wp_enqueue_style( 'parish-cathedral', get_stylesheet_uri(), array(), PARISH_THEME_VERSION );
+		// Version = file time, so browsers fetch the new CSS after every update.
+		wp_enqueue_style( 'parish-cathedral', get_stylesheet_uri(), array(), (string) filemtime( get_stylesheet_directory() . '/style.css' ) );
 		wp_enqueue_script(
 			'parish-cathedral-nav',
 			get_theme_file_uri( 'assets/js/nav.js' ),
 			array(),
-			PARISH_THEME_VERSION,
+			(string) filemtime( get_theme_file_path( 'assets/js/nav.js' ) ),
 			array( 'strategy' => 'defer', 'in_footer' => true )
 		);
 	}

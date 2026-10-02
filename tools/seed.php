@@ -83,6 +83,77 @@ function sd_columns( array $columns ): string {
 	return "<!-- wp:columns -->\n<div class=\"wp-block-columns\">{$out}</div>\n<!-- /wp:columns -->\n\n";
 }
 
+/**
+ * A news category in one language (Polylang), created on first use.
+ */
+function sd_category( string $slug, string $name, string $lang ): int {
+	$term = get_term_by( 'slug', $slug, 'category' );
+	if ( ! $term ) {
+		$made = wp_insert_term( $name, 'category', array( 'slug' => $slug ) );
+		if ( is_wp_error( $made ) ) {
+			return 0;
+		}
+		$term = get_term( $made['term_id'], 'category' );
+	}
+	if ( function_exists( 'pll_set_term_language' ) ) {
+		pll_set_term_language( $term->term_id, $lang );
+	}
+	return (int) $term->term_id;
+}
+
+/**
+ * The Youth Group news categories, [ 'en' => id, 'ru' => id ], linked as
+ * translations so the language switch moves between them.
+ */
+function sd_youth_categories(): array {
+	$ids = array(
+		'en' => sd_category( 'youth-group', 'Youth Group', 'en' ),
+		'ru' => sd_category( 'molodezhnaya-gruppa', 'Молодёжная группа', 'ru' ),
+	);
+	if ( function_exists( 'pll_save_term_translations' ) ) {
+		pll_save_term_translations( array_filter( $ids ) );
+	}
+	return $ids;
+}
+
+/**
+ * A feed of news posts from one category: photo, date, title and summary,
+ * newest first, with "older" / "newer" links. Posting news in that category
+ * adds it here; nothing on this page needs editing.
+ */
+function sd_feed( int $category_id, string $lang ): string {
+	$t     = 'ru' === $lang
+		? array( 'Пока нет новостей.', 'Новее', 'Старее' )
+		: array( 'No updates yet.', 'Newer', 'Older' );
+	$query = array(
+		'queryId'   => 2,
+		'query'     => array(
+			'perPage'  => 6,
+			'pages'    => 0,
+			'offset'   => 0,
+			'postType' => 'post',
+			'order'    => 'desc',
+			'orderBy'  => 'date',
+			'inherit'  => false,
+			'taxQuery' => array( 'category' => array( $category_id ) ),
+		),
+		'className' => 'parish-feed',
+	);
+	return '<!-- wp:query ' . wp_json_encode( $query, JSON_UNESCAPED_UNICODE ) . " -->\n"
+		. "<div class=\"wp-block-query parish-feed\"><!-- wp:post-template {\"layout\":{\"type\":\"grid\",\"columnCount\":2}} -->\n"
+		. "<!-- wp:group {\"className\":\"parish-feed__item\",\"layout\":{\"type\":\"default\"}} -->\n<div class=\"wp-block-group parish-feed__item\">"
+		. "<!-- wp:post-featured-image {\"isLink\":true,\"aspectRatio\":\"3/2\"} /-->\n\n"
+		. "<!-- wp:post-date /-->\n\n"
+		. "<!-- wp:post-title {\"isLink\":true,\"level\":3} /-->\n\n"
+		. "<!-- wp:post-excerpt {\"excerptLength\":30} /--></div>\n<!-- /wp:group -->\n"
+		. "<!-- /wp:post-template -->\n\n"
+		. "<!-- wp:query-pagination {\"layout\":{\"type\":\"flex\",\"justifyContent\":\"space-between\"}} -->\n"
+		. "<!-- wp:query-pagination-previous {\"label\":\"{$t[1]}\"} /-->\n<!-- wp:query-pagination-next {\"label\":\"{$t[2]}\"} /-->\n"
+		. "<!-- /wp:query-pagination -->\n\n"
+		. "<!-- wp:query-no-results -->\n<!-- wp:paragraph -->\n<p>{$t[0]}</p>\n<!-- /wp:paragraph -->\n<!-- /wp:query-no-results --></div>\n"
+		. "<!-- /wp:query -->\n\n";
+}
+
 function sd_calendar( string $view = 'MONTH', int $height = 600 ): string {
 	return '<!-- wp:parish/service-calendar {"view":"' . $view . '","height":' . $height . "} /-->\n\n";
 }
@@ -801,7 +872,7 @@ function sd_pages(): array {
 				'When we meet',
 				'Details to be added by the Head Sister.',
 				'Contact',
-				'Head Sister: <em>name to be added</em><br><a href="{{url:visit}}">Send a message</a>'
+				'Head Sister: <em>name to be added</em><br><a href="{{url:clergy}}">Contact the Cathedral clergy</a>'
 			),
 		),
 		'ru'     => array(
@@ -814,38 +885,34 @@ function sd_pages(): array {
 				'Когда мы встречаемся',
 				'Информацию добавит старшая сестра.',
 				'Контакты',
-				'Старшая сестра: <em>имя будет добавлено</em><br><a href="{{url:visit}}">Написать сообщение</a>'
+				'Старшая сестра: <em>имя будет добавлено</em><br><a href="{{url:clergy}}">Связаться с духовенством собора</a>'
 			),
 		),
 	);
 
+	// Youth Group: like the old site, a feed of the group's news ("Latest
+	// youth updates") instead of contact and upcoming-events boxes. Posting
+	// news in the "Youth Group" category adds it to the feed.
+	$youth_cats = sd_youth_categories();
 	$pages['parish-life/youth-group'] = array(
 		'parent' => 'parish-life',
 		'en'     => array(
 			'slug'    => 'youth-group',
 			'title'   => 'Youth Group',
-			'content' => $group(
-				'The Youth Group supports and coordinates the activities of young people in the parish. It welcomes everyone aged roughly 14 to 30.',
-				'What we do',
-				array( 'Evening talks and discussions', 'Youth pilgrimages', 'Service projects', 'Film nights and social events', 'Helping with parish activities' ),
-				'Upcoming events',
-				'Details to be added by the Youth Leader.',
-				'Contact',
-				'Youth Leader: <em>name to be added</em><br><a href="{{url:visit}}">Send a message</a>'
-			),
+			'content' => sd_p( 'The Youth Group supports and coordinates the activities of young people in the parish. It welcomes everyone aged roughly 14 to 30.' )
+				. sd_h( 'What we do', 2, 'parish-subhead' )
+				. sd_list( array( 'Evening talks and discussions', 'Youth pilgrimages', 'Service projects', 'Film nights and social events', 'Helping with parish activities' ) )
+				. sd_h( 'Latest youth updates', 2, 'parish-subhead' )
+				. sd_feed( $youth_cats['en'], 'en' ),
 		),
 		'ru'     => array(
 			'slug'    => 'molodezhnaya-gruppa',
 			'title'   => 'Молодёжная группа',
-			'content' => $group(
-				'Молодёжная группа объединяет и организует деятельность молодёжи прихода. Приглашаем всех в возрасте примерно от 14 до 30 лет.',
-				'Чем мы занимаемся',
-				array( 'Вечерние беседы и обсуждения', 'Молодёжные паломничества', 'Волонтёрские проекты', 'Киновечера и встречи', 'Помощь в приходских делах' ),
-				'Ближайшие встречи',
-				'Информацию добавит руководитель молодёжной группы.',
-				'Контакты',
-				'Руководитель: <em>имя будет добавлено</em><br><a href="{{url:visit}}">Написать сообщение</a>'
-			),
+			'content' => sd_p( 'Молодёжная группа объединяет и организует деятельность молодёжи прихода. Приглашаем всех в возрасте примерно от 14 до 30 лет.' )
+				. sd_h( 'Чем мы занимаемся', 2, 'parish-subhead' )
+				. sd_list( array( 'Вечерние беседы и обсуждения', 'Молодёжные паломничества', 'Волонтёрские проекты', 'Киновечера и встречи', 'Помощь в приходских делах' ) )
+				. sd_h( 'Новости молодёжной группы', 2, 'parish-subhead' )
+				. sd_feed( $youth_cats['ru'], 'ru' ),
 		),
 	);
 
@@ -861,7 +928,7 @@ function sd_pages(): array {
 				'Term dates',
 				'Classes resume in September. Details to be added by the Sunday School.',
 				'Contact',
-				'Head teacher: <em>name to be added</em><br><a href="{{url:visit}}">Send a message</a>'
+				'Head teacher: <em>name to be added</em><br><a href="{{url:clergy}}">Contact the Cathedral clergy</a>'
 			),
 		),
 		'ru'     => array(
@@ -874,7 +941,7 @@ function sd_pages(): array {
 				'Расписание',
 				'Занятия возобновятся в сентябре. Подробности добавит воскресная школа.',
 				'Контакты',
-				'Директор: <em>имя будет добавлено</em><br><a href="{{url:visit}}">Написать сообщение</a>'
+				'Директор: <em>имя будет добавлено</em><br><a href="{{url:clergy}}">Связаться с духовенством собора</a>'
 			),
 		),
 	);
@@ -891,7 +958,7 @@ function sd_pages(): array {
 				'Rehearsals',
 				'Sundays, 9.00 am<br>Parish House',
 				'Contact',
-				'Choir Director<br><a href="{{url:visit}}">Send a message</a>'
+				'Choir Director<br><a href="{{url:clergy}}">Contact the Cathedral clergy</a>'
 			),
 		),
 		'ru'     => array(
@@ -904,7 +971,7 @@ function sd_pages(): array {
 				'Спевки',
 				'Воскресенье, 9:00<br>Приходской дом',
 				'Контакты',
-				'Регент хора<br><a href="{{url:visit}}">Написать сообщение</a>'
+				'Регент хора<br><a href="{{url:clergy}}">Связаться с духовенством собора</a>'
 			),
 		),
 	);
@@ -921,7 +988,7 @@ function sd_pages(): array {
 				'Opening times',
 				'Every other week. Next dates to be added by the Food Bank team.',
 				'Contact',
-				'Food Bank team<br><a href="{{url:visit}}">Send a message</a>'
+				'Food Bank team<br><a href="{{url:clergy}}">Contact the Cathedral clergy</a>'
 			),
 		),
 		'ru'     => array(
@@ -934,7 +1001,7 @@ function sd_pages(): array {
 				'Часы работы',
 				'Раз в две недели. Ближайшие даты добавит команда продуктового банка.',
 				'Контакты',
-				'Команда продуктового банка<br><a href="{{url:visit}}">Написать сообщение</a>'
+				'Команда продуктового банка<br><a href="{{url:clergy}}">Связаться с духовенством собора</a>'
 			),
 		),
 	);
@@ -1200,6 +1267,21 @@ function sd_upsert_page( array $def, string $lang, int $parent_id = 0 ): int {
 
 function sd_news(): void {
 	$posts = array(
+		// Youth Group news (shown in the feed on the Youth Group page). Examples
+		// from the old youth page, to show how the feed looks.
+		array(
+			'date'     => '2024-01-10 12:00:00',
+			'category' => 'youth',
+			'photo'    => 'youth-group',
+			'en'       => array( 'Youth pilgrimage to Walsingham', sd_p( 'From 29 December to 1 January the Youth Group made a pilgrimage to Walsingham. We visited the holy sites of the area, and at midnight on 1 January an Akathist to the Mother of God was served.' ) ),
+			'ru'       => array( 'Паломничество молодёжи в Уолсингем', sd_p( 'С 29 декабря по 1 января молодёжная группа совершила паломничество в Уолсингем. Мы посетили святые места округи, а в полночь на 1 января был отслужен акафист Божией Матери.' ) ),
+		),
+		array(
+			'date'     => '2023-11-25 12:00:00',
+			'category' => 'youth',
+			'en'       => array( 'Iconography workshop', sd_p( 'On Thursday evening the Youth Group held an iconography workshop with an experienced iconographer from the parish. We watched a short film on the stages of writing an icon, then talked about the meaning of each layer.' ) ),
+			'ru'       => array( 'Мастер-класс по иконописи', sd_p( 'В четверг вечером молодёжная группа провела мастер-класс по иконописи с опытным иконописцем нашего прихода. Мы посмотрели короткий фильм об этапах написания иконы и поговорили о смысле каждого слоя.' ) ),
+		),
 		array(
 			'date' => '2026-07-15 12:00:00',
 			'en'   => array( 'Sunday School resumes in September', sd_p( 'The parish Sunday School will resume its classes in September. Parents who would like to enrol their children are asked to speak to the Sunday School teachers after the Sunday Liturgy.' ) ),
@@ -1253,6 +1335,9 @@ function sd_news(): void {
 			pll_set_post_language( $id, $lang );
 			if ( isset( $item['photo'] ) ) {
 				set_post_thumbnail( $id, sd_photo_id( $item['photo'], $lang ) );
+			}
+			if ( 'youth' === ( $item['category'] ?? '' ) ) {
+				wp_set_post_categories( $id, array( sd_youth_categories()[ $lang ] ) );
 			}
 			$ids[ $lang ] = $id;
 		}
