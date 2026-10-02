@@ -85,6 +85,7 @@ The Russian post appears on the Russian site (addresses starting `/ru/`). Visito
 - **Make the first sentence count.** The News page shows the date, title and the first couple of lines of each post. Put the key facts (what, when, where) first.
 - **Keep titles short and clear**, e.g. "Sunday School resumes on 13 September".
 - **Photos are optional.** If you add one, choose something small and clear. Please don't add photos of children without their parents' permission.
+- **Photo credits.** If the photographer asked to be named, open the photo in **Media → Library** and fill in **Photo credit (English)** and **Photo credit (Russian)**. The name then appears in the corner of the photo wherever it's used, in the right language. Leave both empty for no credit. Changing the credit on one copy of a photo updates its other-language copy too.
 - **Dates:** a post is dated the moment you publish it. To back-date an old announcement, click the date next to **Publish** in the sidebar and change it before publishing.
 
 ### Edit or remove a news item

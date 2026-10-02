@@ -170,12 +170,12 @@ function sd_person( string $role, string $name, string $details, string $photo =
 	);
 }
 
-const SD_CREDIT_SB = 'Protodeacon Sergei Baranoff';
+const SD_CREDIT_SB = array( 'Protodeacon Sergei Baranoff', 'протодиакон Сергий Баранов' );
 
 /**
  * Photos of the Cathedral and parish life in tools/photos/, taken from the
  * parish pages on orthodox-europe.org and from Protodeacon Sergei's albums.
- * Key => [ file, English alt, Russian alt, optional photo credit ].
+ * Key => [ file, English alt, Russian alt, optional [ English credit, Russian credit ] ].
  */
 function sd_photos(): array {
 	return array(
@@ -198,7 +198,7 @@ function sd_photos(): array {
 		'choir-music'          => array( 'choir-music.jpg', 'Choir music in Church Slavonic', 'Ноты хора на церковнославянском' ),
 		'food-bank-team'       => array( 'food-bank-team.jpg', 'Food Bank volunteers outside the Cathedral', 'Волонтёры продуктового банка у собора' ),
 		'book-cover'           => array( 'book-cover.jpg', 'Cover of the book “The London Cathedral”', 'Обложка книги «The London Cathedral»' ),
-		// Photos by Protodeacon Sergei Baranoff (4th element: photo credit).
+		// Photos by Protodeacon Sergei Baranoff (4th element: photo credit, English and Russian).
 		'sb-nave-iconostasis'  => array( 'sb-nave-iconostasis.jpg', 'The nave, chandelier and iconostasis of the Cathedral', 'Храм, паникадило и иконостас собора', SD_CREDIT_SB ),
 		'sb-morning-light'     => array( 'sb-morning-light.jpg', 'Morning light falling through the Cathedral during the Liturgy', 'Утренний свет в соборе во время Литургии', SD_CREDIT_SB ),
 		'sb-feast-congregation' => array( 'sb-feast-congregation.jpg', 'The faithful at a feast-day service', 'Молящиеся на праздничном богослужении', SD_CREDIT_SB ),
@@ -211,7 +211,6 @@ function sd_photos(): array {
 		'sb-icon-lampada'      => array( 'sb-icon-lampada.jpg', 'An icon of the Mother of God with a burning lampada', 'Икона Божией Матери с горящей лампадой', SD_CREDIT_SB ),
 		'sb-icon-kiot'         => array( 'sb-icon-kiot.jpg', 'The Kazan icon of the Mother of God in its carved case', 'Казанская икона Божией Матери в резном киоте', SD_CREDIT_SB ),
 		'sb-shroud-flowers'    => array( 'sb-shroud-flowers.jpg', 'The Holy Shroud decorated with flowers', 'Плащаница, украшенная цветами', SD_CREDIT_SB ),
-		'sb-communion'         => array( 'sb-communion.jpg', 'The Bishop giving Holy Communion', 'Владыка причащает верующих', SD_CREDIT_SB ),
 		'sb-theophany-water'   => array( 'sb-theophany-water.jpg', 'The Great Blessing of Water at Theophany', 'Великое освящение воды на Богоявление', SD_CREDIT_SB ),
 		'sb-feast-red'         => array( 'sb-feast-red.jpg', 'A festal service with the clergy in red vestments', 'Праздничное богослужение, духовенство в красных облачениях', SD_CREDIT_SB ),
 		'sb-vigil-crowd'       => array( 'sb-vigil-crowd.jpg', 'The faithful at the evening service', 'Молящиеся на вечернем богослужении', SD_CREDIT_SB ),
@@ -225,14 +224,20 @@ function sd_photos(): array {
  */
 function sd_photo_id( string $key, string $lang = 'en' ): int {
 	[ $file, $alt, $alt_ru ] = sd_photos()[ $key ];
-	$credit = sd_photos()[ $key ][3] ?? '';
+	$credit = sd_photos()[ $key ][3] ?? array();
 	if ( 'ru' === $lang ) {
 		$id = sd_import_image( __DIR__ . '/photos/' . $file, 'photo-' . $key . '-ru', $alt_ru );
 	} else {
 		$id = sd_import_image( __DIR__ . '/photos/' . $file, 'photo-' . $key, $alt );
 	}
-	if ( $id && $credit ) {
-		update_post_meta( $id, 'parish_photo_credit', $credit );
+	if ( $id ) {
+		// Both language copies share a source key, so a credit edited on one
+		// is copied to the other (see parish-core photo-credit.php).
+		update_post_meta( $id, 'parish_photo_source', $key );
+		if ( $credit ) {
+			update_post_meta( $id, 'parish_photo_credit', $credit[0] );
+			update_post_meta( $id, 'parish_photo_credit_ru', $credit[1] );
+		}
 	}
 	return $id;
 }
@@ -939,7 +944,7 @@ function sd_pages(): array {
 	 * Starts with photos from the old parish pages. Editors add more by dropping
 	 * photos into the gallery block.
 	 */
-	$gallery_photos = array( 'sb-nave-iconostasis', 'sb-morning-light', 'sb-chandelier-vigil', 'sb-pascha-crowd', 'sb-procession', 'sb-clergy-feast', 'sb-bishop-blessing', 'sb-communion', 'sb-theophany-water', 'sb-feast-red', 'sb-icon-lampada', 'sb-icon-kiot', 'sb-shroud-flowers', 'sb-door-garland', 'sb-feast-congregation', 'sb-vigil-crowd', 'interior-iconostasis', 'dome-fresco', 'exterior-dome', 'exterior-side', 'icon-flowers', 'vigil-candles', 'hierarchical-liturgy', 'clergy-group', 'willow-blessing', 'holy-water-blessing', 'candle', 'parish-group', 'sisterhood', 'youth-group', 'food-bank-team' );
+	$gallery_photos = array( 'sb-nave-iconostasis', 'sb-morning-light', 'sb-chandelier-vigil', 'sb-pascha-crowd', 'sb-procession', 'sb-clergy-feast', 'sb-bishop-blessing', 'sb-theophany-water', 'sb-feast-red', 'sb-icon-lampada', 'sb-icon-kiot', 'sb-shroud-flowers', 'sb-door-garland', 'sb-feast-congregation', 'sb-vigil-crowd', 'interior-iconostasis', 'dome-fresco', 'exterior-dome', 'exterior-side', 'icon-flowers', 'vigil-candles', 'hierarchical-liturgy', 'clergy-group', 'willow-blessing', 'holy-water-blessing', 'candle', 'parish-group', 'sisterhood', 'youth-group', 'food-bank-team' );
 	$gallery        = fn( string $lang ) => sd_gallery( $gallery_photos, $lang, 3, 'parish-photo-grid' );
 
 	$pages['parish-life/gallery'] = array(
@@ -1041,7 +1046,8 @@ function sd_pages(): array {
 						. sd_h( 'Photography and phones', 2, 'parish-subhead' )
 						. sd_p( 'Photography during services is not permitted. Please switch your phone off or to silent before entering the church.' )
 						. sd_h( 'Getting here', 2, 'parish-subhead' )
-						. sd_p( 'The Cathedral is on Harvard Road in Chiswick, West London. Rail and Underground stations are within walking distance, and several bus routes stop nearby.' )
+						. sd_p( 'The Cathedral is on Harvard Road in Chiswick, West London. The entrance is the arched wooden door under the icon of the Mother of God. Rail and Underground stations are within walking distance, and several bus routes stop nearby.' )
+						. sd_photo( 'sb-door-garland', 'en', 'parish-door-photo' )
 						. $map( 'Map showing the Cathedral, 57 Harvard Road, London W4 4ED' ),
 					),
 					array(
@@ -1070,7 +1076,8 @@ function sd_pages(): array {
 						. sd_h( 'Фотосъёмка и телефоны', 2, 'parish-subhead' )
 						. sd_p( 'Фото- и видеосъёмка во время богослужений запрещена. Пожалуйста, выключите телефон или переведите его в беззвучный режим до входа в храм.' )
 						. sd_h( 'Как добраться', 2, 'parish-subhead' )
-						. sd_p( 'Собор находится на Harvard Road в Чизике, на западе Лондона. В пешей доступности — железнодорожные станции и станции метро, рядом останавливаются несколько автобусных маршрутов.' )
+						. sd_p( 'Собор находится на Harvard Road в Чизике, на западе Лондона. Вход — арочная деревянная дверь под иконой Божией Матери. В пешей доступности — железнодорожные станции и станции метро, рядом останавливаются несколько автобусных маршрутов.' )
+						. sd_photo( 'sb-door-garland', 'ru', 'parish-door-photo' )
 						. $map( 'Карта: собор, 57 Harvard Road, London W4 4ED' ),
 					),
 					array(
@@ -1422,7 +1429,7 @@ foreach ( $sd_defs as $key => $def ) {
 // Banner photo under each page title (the page's featured image).
 $sd_banners = array(
 	'services'                  => 'sb-morning-light',
-	'sacraments'                => 'sb-communion',
+	'sacraments'                => 'sb-bishop-blessing',
 	'parish-life'               => 'parish-group',
 	'parish-life/sisterhood'    => 'icon-flowers',
 	'parish-life/youth-group'   => 'youth-group',
@@ -1430,8 +1437,8 @@ $sd_banners = array(
 	'parish-life/choir'         => 'choir-music',
 	'parish-life/food-bank'     => 'food-bank-team',
 	'clergy'                    => 'sb-clergy-feast',
-	'visit'                     => 'sb-door-garland',
-	'donate'                    => 'sb-pascha-crowd',
+	'visit'                     => 'exterior-side',
+	'donate'                    => 'sb-vigil-crowd',
 );
 foreach ( $sd_banners as $key => $photo ) {
 	foreach ( $sd_ids[ $key ] ?? array() as $lang => $id ) {

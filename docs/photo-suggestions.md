@@ -2,7 +2,7 @@
 
 Source: the Dropbox folder Nikolai shared on 1 Oct 2026 (138 photos).
 All photos below are credited "Photo: Protodeacon Sergei Baranoff" in the
-corner (Media Library → image → **Photo credit**).
+corner (Media Library → image → **Photo credit (English)** / **(Russian)**: «протодиакон Сергий Баранов»).
 
 ## Already added to the Photo gallery
 
@@ -15,7 +15,7 @@ corner (Media Library → image → **Photo credit**).
 | sb-procession | DSCF1316 | Procession outside the Cathedral |
 | sb-clergy-feast | IMG_0744 | Bishop, clergy and servers, group photo |
 | sb-bishop-blessing | IMG_9976 | Bishop blessing with dikirion/trikirion |
-| sb-communion | DSCF1141 | Bishop giving Communion |
+| ~~sb-communion~~ | DSCF1141 | Removed 1 Oct: close-up of a communicant; ask the Rector before using |
 | sb-theophany-water | IMG_6725 | Great Blessing of Water |
 | sb-feast-red | R0000023 | Festal service, red vestments |
 | sb-icon-lampada | DSCF1186 | Icon of the Mother of God with lampada |
@@ -31,11 +31,11 @@ corner (Media Library → image → **Photo credit**).
 |---|---|---|
 | Home — top banner | sb-nave-iconostasis (or sb-chandelier-vigil) | Brightest, widest view of the whole interior |
 | Services | sb-morning-light | Atmospheric, a service in progress |
-| Sacraments — Communion / Confession | sb-communion | Shows the sacrament directly |
+| Sacraments | sb-bishop-blessing (used) | Dignified, clergy only; no identifiable communicants |
 | Sacraments — Baptism | DSCF0379 (children at the chalice) | Families with small children |
 | Clergy | sb-clergy-feast | All clergy together; good page header |
-| Visit & Contact | sb-door-garland, or R0000211 (door at Christmas) | Shows the entrance visitors look for |
-| Donate | sb-pascha-crowd | A full Cathedral = the community you support |
+| Visit & Contact | Banner: exterior-side; sb-door-garland under "Getting here" (used) | Tall door photo doesn't crop well into a wide banner |
+| Donate | sb-vigil-crowd (used) | People fill the frame even in the wide crop |
 | News — Theophany / Pascha / Holy Week posts | sb-theophany-water, sb-shroud-flowers, R0000199 (reading at the Shroud) | Match the feast |
 | Choir | DSCF1259 or IMG_0674 (clergy group) — none of the choir itself | Ask Pdn Sergei for a choir photo |
 

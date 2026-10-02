@@ -86,6 +86,11 @@ add_filter(
 				return array( 'do_not_allow' );
 			}
 		}
+		// Photos: only their own uploads, so they can't change someone
+		// else's photo or its credit by accident.
+		if ( 'attachment' === $post->post_type && (int) $post->post_author !== $user_id ) {
+			return array( 'do_not_allow' );
+		}
 		return $caps;
 	},
 	10,
