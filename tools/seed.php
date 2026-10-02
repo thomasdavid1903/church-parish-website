@@ -663,6 +663,22 @@ function sd_pages(): array {
 							. sd_p( 'Please read our <a href="{{url:visit}}">guidance on visiting the Cathedral</a>. It covers dress, receiving the Sacraments, and coming with small children.' )
 						),
 					)
+				)
+				. sd_columns(
+					array(
+						sd_card(
+							sd_h( 'Language', 3 )
+							. sd_p( 'Services are in Church Slavonic and English. Readings and sermons are always in both. Service books can be borrowed or bought at the kiosk.' )
+						),
+						sd_card(
+							sd_h( 'Children at services', 3 )
+							. sd_p( 'Children of all ages are welcome. If they need more room, the lower church is open with the service relayed by speakers. To feed a baby, ask at the kiosk for a private room in the Church House.' )
+						),
+						sd_card(
+							sd_h( 'Meals after the Liturgy', 3 )
+							. sd_p( 'On most Sundays (not in summer) the Sisterhood serves a meal in the Hall after the Liturgy. Everyone is welcome, especially visitors. We begin with a prayer once the clergy arrive.' )
+						),
+					)
 				),
 		),
 		'ru' => array(
@@ -690,6 +706,22 @@ function sd_pages(): array {
 						sd_card(
 							sd_h( 'Перед посещением', 3 )
 							. sd_p( 'Пожалуйста, ознакомьтесь с <a href="{{url:visit}}">советами для посетителей собора</a>: об одежде, о подготовке к Таинствам и о посещении храма с маленькими детьми.' )
+						),
+					)
+				)
+				. sd_columns(
+					array(
+						sd_card(
+							sd_h( 'Язык богослужений', 3 )
+							. sd_p( 'Богослужения совершаются на церковнославянском и английском языках. Чтения и проповеди всегда звучат на обоих. Богослужебные книги можно взять или купить в церковной лавке.' )
+						),
+						sd_card(
+							sd_h( 'Дети на службе', 3 )
+							. sd_p( 'Детям любого возраста мы рады. Если ребёнку нужно больше простора, открыт нижний храм, куда транслируется служба. Покормить малыша можно в отдельной комнате Приходского дома — спросите в лавке.' )
+						),
+						sd_card(
+							sd_h( 'Трапеза после литургии', 3 )
+							. sd_p( 'Почти каждое воскресенье (кроме лета) сестричество накрывает трапезу в зале после литургии. Приглашаются все, особенно гости. Трапеза начинается с молитвы после прихода духовенства.' )
 						),
 					)
 				),
