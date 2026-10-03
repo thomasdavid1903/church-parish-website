@@ -19,9 +19,10 @@ How to keep the Cathedral website up to date. No technical knowledge is needed: 
 4. [Service schedule (the calendar)](#4-service-schedule-the-calendar)
 5. [Editing pages](#5-editing-pages)
 6. [Group leader pages](#6-group-leader-pages)
-7. [The menu](#7-the-menu)
-8. [Things that need a developer](#8-things-that-need-a-developer)
-9. [Quick reference](#9-quick-reference)
+7. [Messages from the website](#7-messages-from-the-website)
+8. [The menu](#8-the-menu)
+9. [Things that need a developer](#9-things-that-need-a-developer)
+10. [Quick reference](#10-quick-reference)
 
 ---
 
@@ -84,7 +85,7 @@ The Russian post appears on the Russian site (addresses starting `/ru/`). Visito
 
 - **Make the first sentence count.** The News page shows the date, title and the first couple of lines of each post. Put the key facts (what, when, where) first.
 - **Keep titles short and clear**, e.g. "Sunday School resumes on 13 September".
-- **Photos are optional.** If you add one, choose something small and clear. Please don't add photos of children without their parents' permission.
+- **Give every post a photo.** In the right-hand sidebar, open **Featured image** → **Set featured image** and pick or upload a photo. It appears as a small picture next to the post on the News page and the home page. Any photo of the Cathedral or parish life will do; a landscape (wide) photo looks best. Use the same photo for the Russian version. Please don't add photos of children without their parents' permission.
 - **Photo credits.** If the photographer asked to be named, open the photo in **Media → Library** and fill in **Photo credit (English)** and **Photo credit (Russian)**. The name then appears in the corner of the photo wherever it's used, in the right language. Leave both empty for no credit. Changing the credit on one copy of a photo updates its other-language copy too.
 - **Dates:** a post is dated the moment you publish it. To back-date an old announcement, click the date next to **Publish** in the sidebar and change it before publishing.
 
@@ -151,12 +152,32 @@ The **Daily Readings** page (under Services) fills itself in every day. It shows
 
 ## 5. Editing pages
 
-Pages are the permanent parts of the site: Services, Parish Life, Clergy, Visit & Contact, Support the Cathedral, and so on.
+Pages are the permanent parts of the site: Services, Parish Life, Clergy, Visit, Contact, Support the Cathedral, and so on.
 
 1. Go to **Pages → All Pages** and click the page's title.
 2. Click the text you want to change and type. Changes are made directly on the page, as they'll look to visitors.
 3. Click **Save** (top right).
 4. **Update the Russian version as well:** go back to **Pages**, then click the ✏️ pencil in the Russian column for that page.
+
+### Regular service times
+
+The **Regular services** box (Vigil, Liturgies, Vespers, Akathist) is ordinary page text, unlike the calendar. If a regular time changes, it has to be changed by hand in **six** places:
+
+- the **Home** page, **twice**: the page has one copy of the box for computers (in the right-hand column) and one for phones (at the top of the main column). Use **List View** (☰) to find both;
+- the **Services** page, once;
+- the same three places on the Russian pages.
+
+The line marked with * (e.g. the early Sunday Liturgy) has a small note under the list explaining it. Delete the * and the note if the service becomes regular.
+
+### Home page boxes
+
+- **Main contacts:** the three priests and their phone numbers. Phone numbers also appear on the **Contact** and **Clergy** pages: change all three.
+- **Follow us:** the parish's social media accounts. Each one currently says *Not acquired yet*. When you have the account, select that text, type the account name (e.g. `@londoncathedral`), select it and click 🔗 to link it to the page address. To drop an account the parish doesn't have, select its line and delete it.
+- **The welcome photo** at the top: click it, then **Replace** in the toolbar. Photo credits are deliberately not shown on this photo.
+
+### History of the Parish
+
+The **History of the Parish** page (under Parish Life) has only a short outline. When the full text arrives, paste it in (Ctrl + Shift + V pastes without stray formatting), delete the "will be added here soon" box, and do the same on the Russian page «История прихода».
 
 ### Useful things to know
 
@@ -193,7 +214,37 @@ When a group leader changes, edit the new person's account the same way. Then de
 
 ---
 
-## 7. The menu
+## 7. Messages from the website
+
+Visitors can write to the clergy using the form on the **Contact** page. The home page "Main contacts" box links to it.
+
+### How a message travels
+
+1. The visitor chooses who it is for (**Any of the clergy**, **Archpriest Vitaly**, **Archpriest Yaroslav** or **Hieromonk Theodore**), then fills in their name, email and message.
+2. The website emails it to **one parish inbox** (see below). It doesn't go to each priest separately. The subject line names the priest, for example:
+   `[Website] Message for Archpriest Vitaly Serapinas from Maria Ivanova`
+3. Whoever looks after that inbox **forwards it to the priest named** in the subject. For "Any of the clergy", they decide who should answer.
+4. To answer, just press **Reply**. The reply goes straight to the visitor's own email address, not back to the website.
+5. The visitor sees "Thank you. Your message has been sent" on the page. Nothing is stored on the website itself: the email is the only copy.
+
+### Looking after the inbox
+
+- **Check it at least every few days.** The form tells visitors that the clergy reply by email and to telephone if it's urgent, but people still expect an answer.
+- **Check the spam / junk folder** too, especially in the first weeks. Mark website messages as "Not spam" so later ones arrive normally.
+- **Don't publish or pass on** a visitor's message or email address beyond the clergy. Delete messages once they've been dealt with and are no longer needed (UK data protection).
+- **Junk messages:** the form blocks most automatic spam without a "prove you're not a robot" box. If a lot gets through, tell the developer.
+
+### Changing which inbox receives messages (administrators)
+
+1. Go to **Settings → Parish**.
+2. Under **Contact form**, type the address in **Send messages to**. If this is empty, messages go to the site administrator's email.
+3. Click **Save Changes**, then send yourself a test message from the Contact page to check it arrives.
+
+If test messages don't arrive at all, or always land in spam, the website's email sending needs setting up on the hosting. That is a job for the developer.
+
+---
+
+## 8. The menu
 
 *Administrators only.*
 
@@ -208,29 +259,34 @@ A menu can also be shown in the footer under "Links". Create a menu, then under 
 
 ---
 
-## 8. Things that need a developer
+## 9. Things that need a developer
 
 Most things can be changed from the admin screens. These are built into the site's design, so please ask the web developer to change them:
 
 - the footer text: the address, Google Maps link, Gift Aid note and charity number;
 - the Cathedral name and subtitle in the header;
 - colours, fonts and the general layout;
-- new kinds of feature (e.g. a contact form, a photo gallery or online donations).
+- the list of priests in the contact form's "Message for" drop-down;
+- new kinds of feature (e.g. online donations or posting news to Telegram automatically).
 
 Please **don't** install or update plugins or themes, or change settings under **Settings**, unless the developer has asked you to. It can break the site.
 
 ---
 
-## 9. Quick reference
+## 10. Quick reference
 
 | I want to… | Go to |
 | --- | --- |
 | Post news | **Posts → Add New Post** |
 | Add the Russian version of a post | **Posts → All Posts**, then **+** in the Russian column |
-| Change a service time | **Google Calendar** (both English and Russian calendars), not the website |
+| Add, move or cancel a service | **Google Calendar** (both English and Russian calendars), not the website |
 | Edit a page | **Pages → All Pages**, then click the title |
 | Replace a clergy photo | **Pages → Clergy**, click the photo, **Replace** |
 | Restore an older version of a page | In the editor sidebar: **Revisions** |
 | Give a group leader a login | **Users → Add New User** (role *Group leader*), then tick their page |
 | Change the top menu | **Appearance → Menus** (both EN and RU menus) |
 | Change which Google Calendar is shown | **Settings → Parish** |
+| Change a regular service time | **Pages**: Home (two boxes) and Services, in both languages |
+| Add a social media link | **Pages → Home**, the **Follow us** box (both languages) |
+| Change where contact-form messages go | **Settings → Parish → Contact form** |
+| Give a news post a photo | Post editor sidebar: **Featured image** |

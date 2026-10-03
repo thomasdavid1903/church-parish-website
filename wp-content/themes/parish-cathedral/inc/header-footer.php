@@ -68,7 +68,14 @@ add_shortcode(
 		<div class="parish-topbar">
 			<div class="parish-topbar__inner">
 				<span class="parish-topbar__tagline"><?php echo esc_html( parish_t( 'Russian Orthodox Church Outside Russia · Diocese of Great Britain and Western Europe', 'Русская Православная Церковь Заграницей · Епархия Великобритании и Западной Европы' ) ); ?></span>
-				<?php echo parish_language_switcher(); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped above. ?>
+				<div class="parish-topbar__tools">
+					<form class="parish-search" role="search" method="get" action="<?php echo esc_url( parish_search_url() ); ?>">
+						<label class="screen-reader-text" for="parish-search-input"><?php echo esc_html( parish_t( 'Search the website', 'Поиск по сайту' ) ); ?></label>
+						<input id="parish-search-input" type="search" name="s" placeholder="<?php echo esc_attr( parish_t( 'Search', 'Поиск' ) ); ?>">
+						<button type="submit"><?php echo esc_html( parish_t( 'Search', 'Найти' ) ); ?></button>
+					</form>
+					<?php echo parish_language_switcher(); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped above. ?>
+				</div>
 			</div>
 		</div>
 		<div class="parish-masthead-wrap">
@@ -154,20 +161,13 @@ add_shortcode(
 			<div>
 				<h2><?php echo esc_html( parish_t( 'Services', 'Богослужения' ) ); ?></h2>
 				<p><a href="<?php echo esc_url( parish_page_url( 'services' ) ); ?>"><?php echo esc_html( parish_t( 'Full schedule of services', 'Полное расписание богослужений' ) ); ?></a></p>
-				<p><a href="<?php echo esc_url( parish_page_url( 'clergy' ) ); ?>"><?php echo esc_html( parish_t( 'Clergy and contacts', 'Духовенство и контакты' ) ); ?></a></p>
+				<p><a href="<?php echo esc_url( parish_page_url( 'clergy' ) ); ?>"><?php echo esc_html( parish_t( 'Clergy', 'Духовенство' ) ); ?></a></p>
+				<p><a href="<?php echo esc_url( parish_page_url( 'contact' ) ); ?>"><?php echo esc_html( parish_t( 'Contact us', 'Связаться с нами' ) ); ?></a></p>
 			</div>
 			<div>
 				<h2><?php echo esc_html( parish_t( 'Support the Cathedral', 'Поддержать собор' ) ); ?></h2>
 				<p><?php echo esc_html( parish_t( 'UK taxpayers can add 25% to their gift through Gift Aid.', 'Налогоплательщики Великобритании могут увеличить пожертвование на 25% через Gift Aid.' ) ); ?></p>
 				<p><a href="<?php echo esc_url( parish_page_url( 'donate' ) ); ?>"><?php echo esc_html( parish_t( 'Make a donation', 'Сделать пожертвование' ) ); ?></a></p>
-			</div>
-			<div>
-				<h2><?php echo esc_html( parish_t( 'Search', 'Поиск' ) ); ?></h2>
-				<form class="parish-search" role="search" method="get" action="<?php echo esc_url( parish_search_url() ); ?>">
-					<label class="screen-reader-text" for="parish-search-input"><?php echo esc_html( parish_t( 'Search the website', 'Поиск по сайту' ) ); ?></label>
-					<input id="parish-search-input" type="search" name="s" placeholder="<?php echo esc_attr( parish_t( 'Search the website', 'Поиск по сайту' ) ); ?>">
-					<button type="submit"><?php echo esc_html( parish_t( 'Search', 'Найти' ) ); ?></button>
-				</form>
 			</div>
 			<?php if ( has_nav_menu( 'footer' ) ) : ?>
 				<div>

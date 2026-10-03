@@ -132,10 +132,22 @@ add_action(
 		if ( ! parish_is_leader() ) {
 			return;
 		}
-		remove_submenu_page( 'edit.php?post_type=page', 'post-new.php?post_type=page' );
+		// "Add New Page" is hidden with CSS below rather than removed: removing it
+		// stops WordPress matching Pages → All Pages to its menu, and leaders then
+		// get "not allowed" on the page list. Creating pages is still blocked by
+		// the load-post-new.php check above.
 		remove_menu_page( 'tools.php' );
 	},
 	999
+);
+
+add_action(
+	'admin_head',
+	function () {
+		if ( parish_is_leader() ) {
+			echo '<style>#menu-pages a[href="post-new.php?post_type=page"], .post-type-page .page-title-action { display: none; }</style>';
+		}
+	}
 );
 
 add_action(

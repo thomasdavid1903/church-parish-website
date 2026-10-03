@@ -23,6 +23,7 @@ require_once __DIR__ . '/includes/readings.php';
 require_once __DIR__ . '/includes/editor-language.php';
 require_once __DIR__ . '/includes/transliterate.php';
 require_once __DIR__ . '/includes/photo-credit.php';
+require_once __DIR__ . '/includes/contact-form.php';
 
 register_activation_hook( __FILE__, 'parish_core_add_roles' );
 

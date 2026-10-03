@@ -160,6 +160,10 @@ add_filter(
 				$text = parish_photo_credit_text( $id );
 				return '' === $text ? $html : preg_replace( '/<img /', '<img data-photo-credit="' . esc_attr( $text ) . '" ', $html, 1 );
 			case 'core/cover':
+				// No credit on the home page banner: it reads as a signature across the welcome photo.
+				if ( str_contains( $block['attrs']['className'] ?? '', 'parish-hero' ) ) {
+					return $html;
+				}
 				return parish_photo_credit_insert( $html, parish_photo_credit_html( (int) ( $block['attrs']['id'] ?? 0 ) ), 'div' );
 			case 'core/post-featured-image':
 				return parish_photo_credit_insert( $html, parish_photo_credit_html( (int) get_post_thumbnail_id() ), 'figure' );
