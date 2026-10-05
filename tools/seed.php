@@ -47,7 +47,7 @@ function sd_p( string $html, string $class = '' ): string {
 	return "<!-- wp:paragraph -->\n<p>{$html}</p>\n<!-- /wp:paragraph -->\n\n";
 }
 
-function sd_list( array $items, bool $timetable = false ): string {
+function sd_list( array $items, bool $timetable = false, string $class = '' ): string {
 	$out = '';
 	foreach ( $items as $item ) {
 		if ( is_array( $item ) ) {
@@ -57,6 +57,9 @@ function sd_list( array $items, bool $timetable = false ): string {
 	}
 	if ( $timetable ) {
 		return "<!-- wp:list {\"className\":\"is-style-parish-timetable\"} -->\n<ul class=\"wp-block-list is-style-parish-timetable\">{$out}</ul>\n<!-- /wp:list -->\n\n";
+	}
+	if ( $class ) {
+		return "<!-- wp:list {\"className\":\"{$class}\"} -->\n<ul class=\"wp-block-list {$class}\">{$out}</ul>\n<!-- /wp:list -->\n\n";
 	}
 	return "<!-- wp:list -->\n<ul class=\"wp-block-list\">{$out}</ul>\n<!-- /wp:list -->\n\n";
 }
@@ -395,22 +398,106 @@ function sd_map( string $title, int $height = 380, string $class = '' ): string 
 }
 
 /**
- * "Follow us" card with the parish's social media accounts. Replace each
- * "Not acquired yet" with a link once the parish sends its handles.
+ * History of the Parish: an "At a glance" summary, the introduction, then the
+ * "Key dates" timeline grouped into periods, with photos of the Cathedral
+ * after the dates they illustrate.
+ *
+ * The text comes from the old parish site, one paragraph per date
+ * ("1725: …"), in tools/history-en.txt and tools/history-ru.txt. Until the
+ * Russian file exists, the Russian page shows a summary and links to the
+ * English history.
+ */
+function sd_history( string $lang ): string {
+	$ru   = 'ru' === $lang;
+	$file = __DIR__ . "/history-{$lang}.txt";
+
+	// Periods: [ first year, English heading, Russian heading ].
+	$periods = array(
+		array( 1725, 'The Embassy Chapel, 1725–1917', 'Посольский храм, 1725–1917' ),
+		array( 1919, 'Exile and the Church Abroad, 1917–1956', 'Изгнание и Зарубежная Церковь, 1917–1956' ),
+		array( 1956, 'Emperor’s Gate, 1956–1989', 'Храм у Emperor’s Gate, 1956–1989' ),
+		array( 1989, 'Building the Cathedral in Chiswick, 1989–2018', 'Строительство собора в Чизике, 1989–2018' ),
+		array( 2017, 'The Cathedral today', 'Собор сегодня' ),
+	);
+	$photos = array(
+		1997 => 'exterior-side',
+		2009 => 'interior-iconostasis',
+		2013 => 'exterior-dome',
+		2018 => 'sb-nave-iconostasis',
+	);
+
+	$glance = $ru
+		? array( 'Основан в 1725 году как храм при посольстве Российской империи — один из старейших православных приходов в Европе.', 'С 1920 года — в составе Русской Православной Церкви Заграницей (РПЦЗ).', 'До 1989 года богослужения совершались в храмах в центре Лондона, последний из них — у Emperor’s Gate, освящённый святителем Иоанном (Максимовичем).', 'Нынешний собор в Чизике построен в псковском стиле: первый камень заложен в 1997 году, великое освящение — в 2018 году.' )
+		: array( 'Founded in 1725 as the chapel of the Russian Imperial Embassy: one of the oldest Orthodox parishes in Europe.', 'Part of the Russian Orthodox Church Outside Russia (ROCOR) since 1920.', 'Worshipped in central London until 1989, last at Emperor’s Gate, consecrated by St John (Maximovich).', 'Today’s Cathedral in Chiswick was built in the Pskov style: foundation stone 1997, Great Consecration 2018.' );
+	$out = sd_card( sd_h( $ru ? 'Коротко' : 'At a glance', 2, 'parish-subhead' ) . sd_list( $glance ), 'parish-glance' );
+
+	if ( ! file_exists( $file ) ) {
+		return $out
+			. sd_p( 'Полная история прихода с основными датами пока доступна только на английском языке.' )
+			. sd_p( '<a href="{{url:parish-life/history|en}}">История прихода (на английском) →</a>', 'parish-more' );
+	}
+
+	$dates  = array();
+	$period = -1;
+	$flush  = function () use ( &$out, &$dates ) {
+		if ( $dates ) {
+			$out  .= sd_list( $dates, false, 'parish-timeline' );
+			$dates = array();
+		}
+	};
+	foreach ( preg_split( '/\R\s*\R/', trim( (string) file_get_contents( $file ) ) ) as $para ) {
+		$para = esc_html( trim( $para ) );
+		// "1725: …", "1769-1780: …", "2018-Present: …", "2018 и до сегодняго дня: …"
+		if ( ! preg_match( '/^((\d{4})[^:]{0,30}):\s*(.*)$/su', $para, $m ) ) {
+			$out .= sd_p( $para );
+			continue;
+		}
+		$year = (int) $m[2];
+		if ( -1 === $period ) {
+			$out .= sd_h( $ru ? 'Ключевые даты в истории собора' : 'Key dates in the history of the London Cathedral' );
+		}
+		// Each period is a collapsible Details block (click the title to open it).
+		while ( isset( $periods[ $period + 1 ] ) && $year >= $periods[ $period + 1 ][0] ) {
+			$flush();
+			if ( $period >= 0 ) {
+				$out .= "</details>\n<!-- /wp:details -->\n\n";
+			}
+			++$period;
+			$out .= "<!-- wp:details {\"className\":\"parish-period\"} -->\n<details class=\"wp-block-details parish-period\"><summary>" . $periods[ $period ][ $ru ? 2 : 1 ] . "</summary>\n";
+		}
+		$dates[] = "<strong>{$m[1]}</strong> {$m[3]}";
+		if ( isset( $photos[ $year ] ) && trim( $m[1] ) === (string) $year ) {
+			$flush();
+			$out .= sd_photo( $photos[ $year ], $lang, 'parish-history-photo' );
+		}
+	}
+	$flush();
+	if ( $period >= 0 ) {
+		$out .= "</details>\n<!-- /wp:details -->\n\n";
+	}
+
+	return $out
+		. sd_p( $ru ? '<a href="{{url:visit}}">Посетить собор →</a><br><a href="{{url:parish-life/gallery}}">Фотогалерея →</a>' : '<a href="{{url:visit}}">Visit the Cathedral →</a><br><a href="{{url:parish-life/gallery}}">Photo gallery →</a>', 'parish-more' );
+}
+
+/**
+ * "Follow us" card with the parish's Instagram and Telegram accounts.
  */
 function sd_social( string $lang ): string {
-	$pending = 'ru' === $lang ? 'Пока не получено' : 'Not acquired yet';
+	$ru    = 'ru' === $lang;
+	$insta = '<svg class="parish-social__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>';
+	$tg    = '<svg class="parish-social__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M21.4 3.6 2.9 10.8c-1.2.5-1.2 1.2 0 1.6l4.7 1.5 1.8 5.6c.2.6.4.8.9.8.4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.3-.5-1.9-1.6-1.4zM9.2 13.6l9-5.7c.4-.3.8-.1.5.2l-7.4 6.7-.3 3.2-1.8-4.4z"/></svg>';
+	$links = array(
+		array( 'https://www.instagram.com/rocor.london', $insta, $ru ? 'Instagram собора' : 'Cathedral Instagram' ),
+		array( 'https://t.me/ROCORinLondon', $tg, $ru ? 'Telegram собора' : 'Cathedral Telegram' ),
+		array( 'https://www.instagram.com/rocoryouthlondon', $insta, $ru ? 'Instagram молодёжи' : 'Youth Group Instagram' ),	);
+	$items = array();
+	foreach ( $links as $link ) {
+		$items[] = "<a href=\"{$link[0]}\">{$link[1]}{$link[2]}</a>";
+	}
 	return sd_card(
-		sd_h( 'ru' === $lang ? 'Мы в соцсетях' : 'Follow us' )
-		. sd_list(
-			array(
-				array( 'Telegram', $pending ),
-				array( 'Facebook', $pending ),
-				array( 'Instagram', $pending ),
-				array( 'YouTube', $pending ),
-			),
-			true
-		)
+		sd_h( $ru ? 'Мы в соцсетях' : 'Follow us' )
+		. sd_list( $items, false, 'parish-social' )
 	);
 }
 
@@ -1081,23 +1168,20 @@ function sd_pages(): array {
 	 */
 	/*
 	 * ---- History of the parish ----
-	 * A short outline until the clergy send the full text.
+	 * English text from the old parish site (tools/history-en.txt). The Russian
+	 * page keeps a short outline until a Russian text is supplied.
 	 */
 	$pages['parish-life/history'] = array(
 		'parent' => 'parish-life',
 		'en'     => array(
 			'slug'    => 'history',
 			'title'   => 'History of the Parish',
-			'content' => sd_p( 'Founded in 1725, the parish is one of the oldest Orthodox communities in the British Isles. It now worships in the new Cathedral in Chiswick, West London, built in the Pskov style and consecrated in 2018.' )
-				. sd_photo( 'exterior-dome', 'en' )
-				. sd_card( sd_p( '<em>The full history of the parish will be added here soon.</em>' ) ),
+			'content' => sd_history( 'en' ),
 		),
 		'ru'     => array(
 			'slug'    => 'istoriya-prihoda',
 			'title'   => 'История прихода',
-			'content' => sd_p( 'Приход, основанный в 1725 году, — одна из старейших православных общин на Британских островах. Сегодня богослужения совершаются в новом соборе в Чизике, на западе Лондона, построенном в псковском стиле и освящённом в 2018 году.' )
-				. sd_photo( 'exterior-dome', 'ru' )
-				. sd_card( sd_p( '<em>Полная история прихода скоро появится на этой странице.</em>' ) ),
+			'content' => sd_history( 'ru' ),
 		),
 	);
 
@@ -1693,9 +1777,9 @@ foreach ( $sd_ids as $key => $by_lang ) {
 			continue;
 		}
 		$content = preg_replace_callback(
-			'/\{\{url:([a-z0-9\/-]+)\}\}/',
+			'/\{\{url:([a-z0-9\/-]+)(?:\|(en|ru))?\}\}/', // {{url:key}}, or {{url:key|en}} for the other language's page.
 			function ( $m ) use ( $sd_ids, $lang ) {
-				$target = $sd_ids[ $m[1] ][ $lang ] ?? 0;
+				$target = $sd_ids[ $m[1] ][ $m[2] ?? $lang ] ?? 0;
 				return $target ? wp_make_link_relative( get_permalink( $target ) ) : '#';
 			},
 			$raw

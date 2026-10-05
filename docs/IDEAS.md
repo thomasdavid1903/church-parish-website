@@ -20,6 +20,7 @@ These match question 4 in the proposal.
 | 5 | **Newsletter / WhatsApp sign-up** | Parishioners already share news on WhatsApp. A link to join a broadcast channel is simpler than an email newsletter. | Idea |
 | 6 | **Photo gallery** | Feasts, pilgrimages and parish events. Includes a photo policy, because photography during services isn't allowed. | **Done:** Parish Life → Photo gallery (EN + RU). Seeded as a **draft**; add photos and publish, and it appears in the menu by itself |
 | 7 | **Old news archive** | Import the old news from orthodox-europe.org. Needs an export from the diocesan webmaster. | Idea |
+| 11 | **Parish Membership online** | Let parishioners renew their parish membership on the website. The 5 May 2026 news post ("Please renew your parish membership by 4 June") asks people to renew, but there's no way to do it online. | Idea |
 
 ## Nice to have
 

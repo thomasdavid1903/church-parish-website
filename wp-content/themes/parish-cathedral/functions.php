@@ -63,6 +63,31 @@ add_action(
 );
 
 /**
+ * In news lists, a post without a photo (e.g. most imported from Telegram)
+ * shows the site's cross in a burgundy tile instead, so the list stays even.
+ */
+add_filter(
+	'render_block_core/post-featured-image',
+	function ( $html, $block, $instance ) {
+		$post_id = $instance->context['postId'] ?? 0;
+		// Not on the post's own page: a big cross there would look like a missing photo.
+		if ( '' !== trim( $html ) || 'post' !== get_post_type( $post_id ) || ( is_singular() && get_queried_object_id() === (int) $post_id ) ) {
+			return $html;
+		}
+		$ratio = $block['attrs']['aspectRatio'] ?? '3/2';
+		$cross = '<svg viewBox="0 0 34 44" aria-hidden="true" focusable="false"><g fill="currentColor"><rect x="15" y="0" width="4" height="44"/><rect x="10" y="5" width="14" height="3"/><rect x="4" y="13" width="26" height="4"/><rect x="9" y="29" width="16" height="3.2" transform="rotate(-18 17 30.6)"/></g></svg>';
+		return sprintf(
+			'<figure class="wp-block-post-featured-image parish-photo-placeholder" style="aspect-ratio:%s"><a href="%s" tabindex="-1" aria-hidden="true">%s</a></figure>',
+			esc_attr( $ratio ),
+			esc_url( get_permalink( $post_id ) ),
+			$cross
+		);
+	},
+	10,
+	3
+);
+
+/**
  * Share image for pages without a photo of their own: the photo in the home
  * page banner (its Cover block), so changing that photo changes this too.
  */

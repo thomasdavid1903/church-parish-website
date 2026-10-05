@@ -177,7 +177,7 @@ The line marked with * (e.g. the early Sunday Liturgy) has a small note under th
 
 ### History of the Parish
 
-The **History of the Parish** page (under Parish Life) has only a short outline. When the full text arrives, paste it in (Ctrl + Shift + V pastes without stray formatting), delete the "will be added here soon" box, and do the same on the Russian page «История прихода».
+The **History of the Parish** page (under Parish Life) has the history from the old parish website: an "At a glance" box, an introduction, and a "Key dates" timeline split into periods (sub-headings), with photos. To add a date, click at the end of the entry before it, press **Enter** and type it in the same style (year in bold, then the text). If a date belongs to a new period, add a **Heading** block (H3) above it. The Russian page «История прихода» shows the "Коротко" summary and a link to the English history until the Russian text is added.
 
 ### Useful things to know
 

@@ -94,6 +94,7 @@ add_action(
 						submit_button();
 						?>
 					</form>
+					<?php do_action( 'parish_settings_after_form' ); ?>
 				</div>
 				<?php
 			}

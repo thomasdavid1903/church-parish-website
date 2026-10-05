@@ -298,6 +298,7 @@ a[href^="tel:"] { padding: 0.65rem 0; white-space: nowrap; }
 .parish-news-item > .wp-block-post-featured-image {
 	grid-column: 1;
 	grid-row: 1 / span 3;
+	align-self: center;
 	margin: 0;
 }
 .parish-news-item .wp-block-post-featured-image img { border-radius: 4px; }
@@ -484,6 +485,22 @@ a[href^="tel:"] { padding: 0.65rem 0; white-space: nowrap; }
 	margin: 0 0 0.6rem;
 }
 .parish-footer p { margin: 0 0 0.4rem; }
+.parish-photo-placeholder a {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	border-radius: 4px;
+	background: var(--wp--preset--color--primary);
+	color: var(--wp--preset--color--white);
+}
+.parish-photo-placeholder svg { height: 55%; width: auto; }
+.parish-telegram-source { font-size: var(--wp--preset--font-size--small); }
+.parish-social { list-style: none; margin: 0; padding: 0; }
+.parish-social li { padding: 0.35rem 0; border-bottom: 1px dotted var(--wp--preset--color--border); }
+.parish-social li:last-child { border-bottom: 0; }
+.parish-social a { display: inline-flex; align-items: center; gap: 0.6rem; }
+.parish-social__icon { width: 20px; height: 20px; flex: none; }
 .parish-search { display: flex; gap: 0.4rem; }
 .parish-search input[type="search"] {
 	flex: 1;
@@ -646,6 +663,59 @@ a[href^="tel:"] { padding: 0.65rem 0; white-space: nowrap; }
 /* Door photo in "Getting here" on the Visit page */
 .parish-door-photo img { width: 280px; height: 420px; max-width: 100%; object-fit: cover; border-radius: 4px; }
 .parish-door-photo { width: fit-content; max-width: 100%; }
+
+/* "Key dates" on the History of the Parish page */
+.parish-timeline { list-style: none; padding-left: 0; }
+.parish-timeline li {
+	padding: 0.75rem 0 0.75rem 1rem;
+	border-left: 3px solid var(--wp--preset--color--border);
+	margin: 0;
+}
+.parish-timeline li strong { display: block; color: var(--wp--preset--color--primary); }
+/* Each period of the timeline opens and closes. */
+.parish-period {
+	border-top: 1px solid var(--wp--preset--color--border);
+	margin: 0;
+}
+.parish-period:last-of-type { border-bottom: 1px solid var(--wp--preset--color--border); }
+.parish-period > summary {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	min-height: 44px;
+	padding: 0.8rem 0;
+	font-family: var(--wp--preset--font-family--serif, serif);
+	font-size: 1.25rem;
+	font-weight: 700;
+	cursor: pointer;
+	list-style: none;
+}
+.parish-period > summary::-webkit-details-marker { display: none; }
+.parish-period > summary::after {
+	content: "+";
+	flex: none;
+	width: 1.6rem;
+	height: 1.6rem;
+	border: 1px solid var(--wp--preset--color--border);
+	border-radius: 50%;
+	text-align: center;
+	line-height: 1.5rem;
+	font-weight: 400;
+	color: var(--wp--preset--color--primary);
+}
+.parish-period[open] > summary::after { content: "−"; }
+.parish-period > summary:hover { color: var(--wp--preset--color--primary); }
+.parish-period[open] { padding-bottom: 1rem; }
+
+.parish-glance ul { margin: 0; padding-left: 1.2rem; }
+.parish-glance li { margin-bottom: 0.4rem; }
+
+/* Photos between the dates: a wide strip, not a full-height square. */
+.parish-history-photo img { width: 100%; height: 320px; object-fit: cover; border-radius: 4px; }
+@media (max-width: 600px) {
+	.parish-history-photo img { height: 200px; }
+}
 
 /* Small print under a card's list (e.g. the early Liturgy note) */
 .parish-note { font-size: 0.85rem; color: var(--wp--preset--color--muted); margin: 0.5rem 0 0; }
