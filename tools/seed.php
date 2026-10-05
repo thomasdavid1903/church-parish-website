@@ -1354,8 +1354,8 @@ function sd_pages(): array {
 							. sd_p( '<strong>Hieromonk Theodore</strong><br>' . sd_tel( '+44 7534 694 534' ) )
 							. sd_p( '<a href="{{url:clergy}}">All clergy</a>', 'parish-more' )
 						)
-						. sd_card( sd_h( 'Other enquiries', 2, 'parish-subhead' ) . sd_p( 'For general enquiries or use of the Parish House, please contact the Churchwarden.' ) . sd_p( '<a href="{{url:sacraments}}">Baptisms, weddings and funerals</a>' ) )
-						. sd_card( sd_h( 'Address', 2, 'parish-subhead' ) . sd_p( '57 Harvard Road<br>London W4 4ED' ) . sd_p( '<a href="{{url:visit}}">Directions and visiting</a>' ) ),
+						. sd_social( 'en' )
+						. sd_card( sd_h( 'Other enquiries', 2, 'parish-subhead' ) . sd_p( 'For general enquiries or use of the Parish House, please contact the Churchwarden.' ) . sd_p( '<a href="{{url:sacraments}}">Baptisms, weddings and funerals</a>' ) ),
 					),
 				)
 			),
@@ -1380,8 +1380,8 @@ function sd_pages(): array {
 							. sd_p( '<strong>Иеромонах Феодор</strong><br>' . sd_tel( '+44 7534 694 534' ) )
 							. sd_p( '<a href="{{url:clergy}}">Всё духовенство</a>', 'parish-more' )
 						)
-						. sd_card( sd_h( 'Другие вопросы', 2, 'parish-subhead' ) . sd_p( 'По общим вопросам и использованию Приходского дома обращайтесь к старосте.' ) . sd_p( '<a href="{{url:sacraments}}">Крещение, венчание и отпевание</a>' ) )
-						. sd_card( sd_h( 'Адрес', 2, 'parish-subhead' ) . sd_p( '57 Harvard Road<br>London W4 4ED' ) . sd_p( '<a href="{{url:visit}}">Как добраться</a>' ) ),
+						. sd_social( 'ru' )
+						. sd_card( sd_h( 'Другие вопросы', 2, 'parish-subhead' ) . sd_p( 'По общим вопросам и использованию Приходского дома обращайтесь к старосте.' ) . sd_p( '<a href="{{url:sacraments}}">Крещение, венчание и отпевание</a>' ) ),
 					),
 				)
 			),
