@@ -449,10 +449,14 @@ function parish_tg_add_photo( array $ids, array $m ): void {
 	require_once ABSPATH . 'wp-admin/includes/file.php';
 	require_once ABSPATH . 'wp-admin/includes/media.php';
 	require_once ABSPATH . 'wp-admin/includes/image.php';
-	$tmp = download_url( 'https://api.telegram.org/file/bot' . get_option( PARISH_OPTION_TG_TOKEN ) . '/' . $file['file_path'] );
-	if ( is_wp_error( $tmp ) ) {
+	// Not download_url(): its "safe URL" check can reject api.telegram.org on
+	// some hosts (it does on Playground), and the photo is then silently lost.
+	$res = wp_remote_get( 'https://api.telegram.org/file/bot' . get_option( PARISH_OPTION_TG_TOKEN ) . '/' . $file['file_path'], array( 'timeout' => 60 ) );
+	if ( is_wp_error( $res ) || 200 !== wp_remote_retrieve_response_code( $res ) ) {
 		return;
 	}
+	$tmp = wp_tempnam( 'telegram-' . (int) $m['message_id'] );
+	file_put_contents( $tmp, wp_remote_retrieve_body( $res ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 	$attachment = media_handle_sideload(
 		array(
 			'name'     => 'telegram-' . (int) $m['message_id'] . '.jpg',
