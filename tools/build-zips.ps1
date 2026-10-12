@@ -32,6 +32,9 @@ New-Zip 'parish-setup' {
 	param($z)
 	[void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z, "$root\tools\parish-setup\parish-setup.php", 'parish-setup/parish-setup.php')
 	[void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z, "$root\tools\seed.php", 'parish-setup/seed/seed.php')
+	Get-ChildItem "$root\tools\history-*.txt" | ForEach-Object {
+		[void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z, $_.FullName, 'parish-setup/seed/' + $_.Name)
+	}
 	Add-Folder $z "$root\tools\photos" 'parish-setup/seed/photos'
 	Add-Folder $z "$root\tools\clergy" 'parish-setup/seed/clergy'
 }
