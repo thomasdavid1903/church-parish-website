@@ -72,7 +72,28 @@ Defaults for now: posts publish straight away; forwards from other channels are 
 5. Post in the test channel (copy a few real posts from ROCOR London, with a photo or two), then click **Check Telegram now**.
 6. On the live site, click **Switch on instant delivery** so posts arrive within seconds instead of every 5 minutes.
 
-For the real channel, the same steps with t.me/ROCORinLondon in step 3–4.
+## Switching from the test channel to the real one
+
+Do this once the live site is running on Hostinger and the test channel works. It takes about 15 minutes. You need a WordPress administrator, and a Telegram admin of t.me/ROCORinLondon with the right to add administrators.
+
+1. **Decide first:** the open questions under "Things to decide" above (publish straight away or as a draft, phone numbers, diocesan forwards, short notices). Whatever the settings are at the moment of the switch is what the parish will see.
+2. **Keep the same bot.** There's no need for a new one: the token stays the same, and the bot can be removed from the test channel afterwards.
+3. **Add the bot to the real channel:** in t.me/ROCORinLondon, **Channel info → Administrators → Add admin** → search for the bot's username → add it. Default rights are fine; it only reads posts.
+4. **Point the website at the real channel:** **Settings → Parish → Telegram → News**, set **Channel** to `ROCORinLondon` (no `@`, no link), **Save**. From now on, posts from any other channel, including the test one, are ignored.
+   - Don't leave **Channel** empty: then the site imports from every channel the bot is in.
+5. **Remove the test posts:** **Posts**, filter or search for the test posts, and move them to the Bin in both English and Russian. Also delete their photos from the **Media Library** if they're not wanted.
+   - Real and test posts can't clash: each imported post is remembered by its channel *and* message number.
+6. **Check it works:** ask the channel admin to publish a real post (or wait for the next one). If instant delivery is on it appears within seconds; otherwise click **Check Telegram now**, or wait up to 5 minutes. Check that both the English and Russian news posts appear and are linked by the language switcher.
+   - If instant delivery isn't on yet, click **Switch on instant delivery** (live site only, needs HTTPS).
+7. **Tidy up:** remove the bot from the test channel (or delete the test channel), and tick the Telegram item in the [go-live checklist](GO-LIVE-CHECKLIST.md).
+
+**Good to know**
+
+- Only posts published *after* the switch come in. Older posts from the channel are not imported. That needs the one-off import (step 4 of the build plan below), which isn't built yet.
+- Posts made while the site is set to the test channel are lost for the website: Telegram keeps undelivered posts for 24 hours at most, and the site skips anything not from the named channel.
+- Edits to real posts in Telegram update the website post. Deleting a post in Telegram does **not** delete it from the website; delete it there by hand.
+- To stop importing altogether: **Switch back to checking every 5 minutes**, then clear the **Bot token**, or remove the bot from the channel.
+- If nothing arrives, the status line under **Settings → Parish → Telegram** shows the last check and any error from Telegram (e.g. a wrong token, or the bot isn't an admin).
 
 ## Build plan (about a day of work)
 
